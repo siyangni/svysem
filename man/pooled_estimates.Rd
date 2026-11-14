@@ -43,25 +43,15 @@ transformed back (\code{est = tanh(z)}, \code{se = se_z * (1 - est^2)}, limits
 and \code{fmi} stay on the z scale.
 }
 \examples{
-fit_i <- function(est, v) {
-  dimnames(v) <- list(names(est), names(est))
-  structure(list(coefficients = est, variance = v), class = "svysem_eg")
+fit_once <- function(seed) {
+  design <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = seed)
+  svysem(
+    "y ~ x1 + x2", design,
+    fixed.x = FALSE, meanstructure = TRUE
+  )
 }
-registerS3method(
-  "coef", "svysem_eg", function(object, ...) object$coefficients,
-  envir = asNamespace("stats")
-)
-registerS3method(
-  "vcov", "svysem_eg", function(object, ...) object$variance,
-  envir = asNamespace("stats")
-)
-fits <- list(
-  fit_i(c(b1 = 0.30, b2 = 0.10), diag(2) * 0.02),
-  fit_i(c(b1 = 0.50, b2 = 0.20), diag(2) * 0.03),
-  fit_i(c(b1 = 0.40, b2 = 0.15), diag(2) * 0.02),
-  fit_i(c(b1 = 0.35, b2 = 0.12), diag(2) * 0.025)
-)
-pooled_estimates(fits, df.com = 80)
+fits <- list(fit_once(1), fit_once(2))
+pooled_estimates(fits, df.com = fits[[1]]@df)
 }
 \references{
 Rubin D (1987). Multiple Imputation for Nonresponse in Surveys.

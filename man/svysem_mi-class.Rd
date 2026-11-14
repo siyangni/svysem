@@ -104,40 +104,21 @@ imputation did not error).}
 
 \examples{
 if (requireNamespace("mitools", quietly = TRUE)) {
-  imp <- list(
-    data.frame(
-      y = 1:30, x = rep(1:10, 3), w = 1,
-      id = 1:30, strata = rep(1:2, each = 15)
-    ),
-    data.frame(
-      y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
-      id = 1:30, strata = rep(1:2, each = 15)
-    )
-  )
+  base <- simulate_design(
+    n_psu = 6, n_per = 4, n_strata = 2, seed = 1
+  )$variables
+  alt <- base
+  alt$y <- alt$y + 0.2
   des <- survey::svydesign(
-    ids = ~id, strata = ~strata, weights = ~w,
-    data = mitools::imputationList(imp)
+    ids = ~psu, strata = ~strat, weights = ~w,
+    data = mitools::imputationList(list(base, alt))
   )
-  stopifnot(inherits(des, "svyimputationList"))
-  # svysem("y ~ x", des) returns a svysem_mi object once each completed
-  # design can be fitted. Pooling itself only needs coef() and vcov():
-  fit_i <- function(est, v) {
-    dimnames(v) <- list(names(est), names(est))
-    structure(list(coefficients = est, variance = v), class = "svysem_eg")
-  }
-  registerS3method(
-    "coef", "svysem_eg", function(object, ...) object$coefficients,
-    envir = asNamespace("stats")
+  fit <- svysem(
+    "y ~ x1 + x2", des,
+    fixed.x = FALSE, meanstructure = TRUE
   )
-  registerS3method(
-    "vcov", "svysem_eg", function(object, ...) object$variance,
-    envir = asNamespace("stats")
-  )
-  fits <- list(
-    fit_i(c(yx = 0.4), matrix(0.02)),
-    fit_i(c(yx = 0.6), matrix(0.03))
-  )
-  pooled_estimates(fits, df.com = survey::degf(des$designs[[1]]))
+  coef(fit)
+  fit
 }
 }
 \references{

@@ -37,27 +37,15 @@ constraints use a positive harmonic mean of the large-sample denominator
 and the observed-data degrees of freedom.
 }
 \examples{
-fit_i <- function(est, v) {
-  dimnames(v) <- list(names(est), names(est))
-  structure(list(coefficients = est, variance = v), class = "svysem_eg")
+fit_once <- function(seed) {
+  design <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = seed)
+  svysem(
+    "y ~ b1*x1 + b2*x2", design,
+    fixed.x = FALSE, meanstructure = TRUE
+  )
 }
-registerS3method(
-  "coef", "svysem_eg", function(object, ...) object$coefficients,
-  envir = asNamespace("stats")
-)
-registerS3method(
-  "vcov", "svysem_eg", function(object, ...) object$variance,
-  envir = asNamespace("stats")
-)
-fits <- list(
-  fit_i(c(b1 = 0.30, b2 = 0.10), diag(2) * 0.02),
-  fit_i(c(b1 = 0.50, b2 = 0.20), diag(2) * 0.03),
-  fit_i(c(b1 = 0.40, b2 = 0.15), diag(2) * 0.02),
-  fit_i(c(b1 = 0.35, b2 = 0.12), diag(2) * 0.025),
-  fit_i(c(b1 = 0.45, b2 = 0.18), diag(2) * 0.02),
-  fit_i(c(b1 = 0.38, b2 = 0.11), diag(2) * 0.022)
-)
-pooled_wald(fits, constraints = "b1 - b2", df.com = 80)
+fits <- list(fit_once(1), fit_once(2))
+pooled_wald(fits, constraints = "b1 - b2", df.com = fits[[1]]@df)
 }
 \references{
 Rubin D (1987). Multiple Imputation for Nonresponse in Surveys.

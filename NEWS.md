@@ -1,6 +1,9 @@
 # svysem 0.0.1
 
 * CRAN check fixes. `coef`, `vcov` and `summary` are registered S3 methods, the unused `numDeriv` import is removed, and examples that need `mitools` are guarded.
+* Examples fit simulated designs. They do not register methods in the `stats` namespace.
+* `pooled_wald()` accepts an unlabeled model. lavaan omits the label column when no parameter is labeled.
+* The description spell check accepts Oberski, Satorra, Bentler, and subpopulation.
 * R 4.2.0 or newer is required.
 * `coef()` and `vcov()` on a pooled object are also S4 methods, so they still run after lavaan turns those generics into S4 methods. Standardized pooling requests lavaan standard errors with `se = TRUE`.
 * A `svyrep.design` is refused with `svysem_error_design`. Replicate-weight designs are not supported yet.

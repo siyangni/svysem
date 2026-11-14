@@ -618,6 +618,16 @@ test_that("pooled_wald on two labeled regressions returns a finite F", {
   expect_true(two$pvalue > 0 && two$pvalue <= 1)
 })
 
+test_that("pooled_wald accepts an unlabeled model with no label column", {
+  skip_if_not_installed("mitools")
+  design <- mi_design(3, seed = 281)
+  fit <- svysem("y ~ x + x2", design, fixed.x = FALSE, meanstructure = TRUE)
+  one <- pooled_wald(fit, "`y~x` - `y~x2`")
+  expect_true(is.finite(one$F))
+  expect_equal(one$df1, 1)
+  expect_true(one$pvalue > 0 && one$pvalue <= 1)
+})
+
 test_that("fitMeasures on an imputation fit returns finite scaled and robust indices", {
   skip_if_not_installed("mitools")
   # Four indicators so the factor model has positive degrees of freedom.

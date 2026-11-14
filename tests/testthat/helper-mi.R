@@ -1,13 +1,14 @@
-# Registered here so UseMethod finds them from the package namespace.
+# Record the test methods on this package. UseMethod finds them in the S3
+# table of stats::coef. The stats namespace registration itself is untouched.
 registerS3method(
   "coef", "svysem_fake",
   function(object, ...) object$coefficients,
-  envir = asNamespace("stats")
+  envir = asNamespace("svysem")
 )
 registerS3method(
   "vcov", "svysem_fake",
   function(object, ...) object$variance,
-  envir = asNamespace("stats")
+  envir = asNamespace("svysem")
 )
 
 fits_from_qu <- function(Qhat, Uhat) {

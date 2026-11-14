@@ -88,12 +88,17 @@ svysem_substitute_definitions <- function(expr, definitions) {
 # Free-parameter symbol for each label and each lhs-op-rhs name.
 svysem_lavaan_maps <- function(fit, coef_names) {
   pe <- lavaan::parameterEstimates(fit)
-  needed <- c("lhs", "op", "rhs", "label")
+  needed <- c("lhs", "op", "rhs")
   if (!all(needed %in% names(pe))) {
     svysem_stop(
-      "parameterEstimates() is missing lhs, op, rhs, or label.",
+      "parameterEstimates() is missing lhs, op, or rhs.",
       "svysem_error_constraint"
     )
+  }
+  # lavaan omits the label column when the model has no labels. Constraints
+  # then use the coefficient names, such as y~x1.
+  if (!"label" %in% names(pe)) {
+    pe$label <- rep("", nrow(pe))
   }
   aliases <- character()
   definitions <- character()

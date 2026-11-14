@@ -65,21 +65,20 @@ Tests and examples use at most two cores.
 }
 \examples{
 if (requireNamespace("mitools", quietly = TRUE)) {
-  imp <- list(
-    data.frame(
-      y = 1:30, x = rep(1:10, 3), w = 1,
-      id = 1:30, strata = rep(1:2, each = 15)
-    ),
-    data.frame(
-      y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
-      id = 1:30, strata = rep(1:2, each = 15)
-    )
-  )
+  base <- simulate_design(
+    n_psu = 6, n_per = 4, n_strata = 2, seed = 1
+  )$variables
+  alt <- base
+  alt$y <- alt$y + 0.2
   des <- survey::svydesign(
-    ids = ~id, strata = ~strata, weights = ~w,
-    data = mitools::imputationList(imp)
+    ids = ~psu, strata = ~strat, weights = ~w,
+    data = mitools::imputationList(list(base, alt))
   )
-  stopifnot(inherits(des, "svyimputationList"), length(des$designs) == 2L)
+  fit <- svysem(
+    "y ~ x1 + x2", des,
+    fixed.x = FALSE, meanstructure = TRUE
+  )
+  coef(fit)
 }
 }
 \references{
