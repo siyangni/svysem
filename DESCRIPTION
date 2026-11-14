@@ -25,7 +25,7 @@ Description: Design-based estimation of structural equation models uses a model
 License: GPL (>= 2)
 URL: https://github.com/siyangni/svysem
 BugReports: https://github.com/siyangni/svysem/issues
-Depends: R (>= 4.1.0)
+Depends: R (>= 4.2.0)
 Imports:
     lavaan (>= 0.6-21),
     methods,
