@@ -2,16 +2,26 @@ Package: svysem
 Title: Design-Based Structural Equation Models for Complex Surveys
 Version: 0.0.1
 Authors@R: person("Siyang", "Ni", email = "johnni.nj@gmail.com", role = c("aut", "cre", "cph"))
-Description: Design-based estimation of structural equation models fitted
-    with 'lavaan' for data stored in a 'survey' design. Sampling weights,
-    clustering and stratification enter the variance as in 'Mplus' TYPE=COMPLEX.
-    The design-based covariance of the sample moments is passed to 'lavaan',
-    which returns robust standard errors and a scaled test (Oberski (2014)
-    <doi:10.18637/jss.v057.i01>). Each completed data set of a multiple
-    imputation is fitted separately and the estimates are pooled with Rubin's
-    rules, using the design degrees of freedom as the complete-data degrees of
-    freedom (Rubin (1987) <doi:10.1002/9780470316696>; Barnard and Rubin (1999)
-    <doi:10.1093/biomet/86.4.948>).
+Description: Design-based estimation of structural equation models uses a model
+    for 'lavaan' and a design from 'survey' as input, including a subpopulation
+    taken with subset(). Sampling weights, strata, and primary sampling units
+    enter the variance the way 'Mplus' does with TYPE=COMPLEX (Oberski (2014)
+    <doi:10.18637/jss.v057.i01>). The design-based covariance of the sample
+    moments goes to 'lavaan' with the raw data and the weights. svysem(),
+    svycfa(), and svygrowth() are the three fitters. svysem() fits a structural
+    equation model, svycfa() a confirmatory factor analysis, and svygrowth() a
+    growth curve. The result extends the 'lavaan' fit, so coef(), vcov(), and
+    fitMeasures() are design-based. Each completed data set of a multiple
+    imputation is fitted on its own and pooled with Rubin's rules (Rubin (1987)
+    <doi:10.1002/9780470316696>). pooled_estimates() and pooled_wald() use the
+    survey design's degrees of freedom as the complete-data degrees of freedom
+    (Barnard and Rubin (1999) <doi:10.1093/biomet/86.4.948>). fitMeasures()
+    reports a pooled scaled chi-square and the mean, minimum, and maximum of the
+    robust fit indices. Those indices are not pooled with Rubin's rules. This
+    version fits complete continuous data with maximum likelihood and a
+    Satorra-Bentler adjustment. Ordinal weighted least squares, robust maximum
+    likelihood, factor scores, and replicate-weight designs are not in this
+    version.
 License: GPL (>= 2)
 URL: https://github.com/siyangni/svysem
 BugReports: https://github.com/siyangni/svysem/issues
