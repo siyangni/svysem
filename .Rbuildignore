@@ -1,0 +1,10 @@
+^BUILD_PLAN\.md$
+^SVYSEM_PLAN\.md$
+^data-raw$
+^\.git$
+^\.gitignore$
+^\.Rbuildignore$
+^\.worktrees$
+^README\.md$
+^LICENSE$
+^\.github$
