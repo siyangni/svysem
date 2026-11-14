@@ -117,7 +117,7 @@ svysem_check_level <- function(level) {
 }
 
 svysem_std_piece <- function(fit) {
-  # lavaan 0.6-21 omits se unless se=TRUE when class[1] is not "lavaan".
+  # lavaan omits se unless se=TRUE when class[1] is not "lavaan".
   ss <- lavaan::standardizedSolution(fit, type = "std.all", se = TRUE)
   needed <- c("lhs", "op", "rhs", "est.std", "se")
   if (!all(needed %in% names(ss))) {
@@ -218,8 +218,8 @@ svysem_pool_standardized <- function(fits, level, df.com) {
 #' `t` is the t statistic, the pooled estimate divided by its standard error,
 #' not the total variance. With `standardized = TRUE`, each fit must be a
 #' lavaan object. Standard errors on that table are requested with
-#' `se = TRUE`, because lavaan 0.6-21 omits them when the fit's class is not
-#' exactly `lavaan`. Loadings, regressions and variances are pooled on the
+#' `se = TRUE`, because lavaan omits them when the fit's class is not exactly
+#' `lavaan`. `se = TRUE` matches `sqrt(diag(vcov()))`. Loadings, regressions and variances are pooled on the
 #' `std.all` scale. Correlations (`~~` with different left- and right-hand
 #' sides) are pooled on the Fisher z scale, `z = atanh(r)` with
 #' `se_z = se_r / (1 - r^2)`. Reported `est`, `se` and confidence limits are

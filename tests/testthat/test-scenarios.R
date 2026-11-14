@@ -367,7 +367,7 @@ test_that("parameterEstimates(se = TRUE) returns the design-based standard error
   fit <- svysem("y ~ x1 + x2", design, fixed.x = FALSE, meanstructure = TRUE)
   pe0 <- parameterEstimates(fit)
   ss0 <- standardizedSolution(fit)
-  # lavaan 0.6-21 omits se unless se=TRUE when class[1] is not "lavaan".
+  # lavaan omits se unless se=TRUE when class[1] is not "lavaan".
   # svysem has to stay the first class so show() and summary() dispatch.
   expect_false("se" %in% names(pe0))
   expect_false("se" %in% names(ss0))

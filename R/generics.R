@@ -11,10 +11,12 @@
 #'
 #' The returned object extends lavaan, so [coef()], [vcov()],
 #' [lavaan::lavTestWald()] and [lavaan::fitMeasures()] report design-based
-#' results. In lavaan 0.6-21, [lavaan::parameterEstimates()] and
-#' [lavaan::standardizedSolution()] omit standard errors unless `se = TRUE`
-#' when the object's class is not exactly `lavaan`. [summary()] and the
-#' printed display add the design degrees of freedom and the estimator.
+#' results. [lavaan::parameterEstimates()] and
+#' [lavaan::standardizedSolution()] omit standard errors unless `se = TRUE`,
+#' because the object's class is `svysem` rather than `lavaan`. `se = TRUE`
+#' returns the design-based standard errors, matching `sqrt(diag(vcov()))`.
+#' [summary()] and the printed display add the design degrees of freedom and
+#' the estimator.
 #'
 #' MLM uses complete data. `missing = "ml"` is an error and names MLR as the
 #' estimator that will handle it. Rows that are incomplete on the model
