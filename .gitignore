@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 .worktrees/
+SVYSEM_PLAN.md
 *.tar.gz
 *.sha256
 svysem.Rcheck
