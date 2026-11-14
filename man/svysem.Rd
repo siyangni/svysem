@@ -4,6 +4,15 @@
 \alias{svysem}
 \alias{svycfa}
 \alias{svygrowth}
+\alias{svysem.survey.design2}
+\alias{svysem.survey.design}
+\alias{svysem.default}
+\alias{svycfa.survey.design2}
+\alias{svycfa.survey.design}
+\alias{svycfa.default}
+\alias{svygrowth.survey.design2}
+\alias{svygrowth.survey.design}
+\alias{svygrowth.default}
 \title{Design-based structural equation models.}
 \usage{
 svysem(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
@@ -11,26 +20,106 @@ svysem(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
 svycfa(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
 
 svygrowth(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svysem}{survey.design2}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svysem}{survey.design}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svysem}{default}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svycfa}{survey.design2}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svycfa}{survey.design}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svycfa}{default}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svygrowth}{survey.design2}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svygrowth}{survey.design}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+
+\method{svygrowth}{default}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
 }
 \arguments{
 \item{model}{Model syntax, as for \code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[lavaan:cfa]{lavaan::cfa()}} or
 \code{\link[lavaan:growth]{lavaan::growth()}}.}
 
-\item{design}{A design object. \code{survey.design} and \code{survey.design2} are the
-linearization designs. \code{svyimputationList} is a set of completed designs.}
+\item{design}{A \code{survey.design} or \code{survey.design2} object, including the
+result of \code{\link[=subset]{subset()}}.}
 
-\item{estimator}{Variance estimator. \code{"MLM"} is implemented. \code{"WLSMV"} and
-\code{"MLR"} are reserved.}
+\item{estimator}{Variance estimator. Only \code{"MLM"} is implemented. \code{"WLSMV"}
+and \code{"MLR"} are reserved and raise \code{svysem_error_estimator}.}
 
-\item{...}{Passed to the lavaan fitter (\code{sem}, \code{cfa} or \code{growth}).}
+\item{...}{Passed to \code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[lavaan:cfa]{lavaan::cfa()}} or \code{\link[lavaan:growth]{lavaan::growth()}}.
+\code{data}, \code{sampling.weights}, sample moments and \code{NACOV} are taken from the
+design. \code{ov.order} is set internally so Gamma matches the model.}
 }
 \value{
-An object of class \code{svysem}, or \code{svysem_mi} for an imputation list.
+An S4 object of class \code{svysem} that contains the lavaan fit. Slots
+are \code{df} (design degrees of freedom), \code{estimator} (\code{"MLM"}),
+\code{variance_method} (\code{"linearization"}) and \code{svysem_call}.
 }
 \description{
-\code{svysem()}, \code{svycfa()} and \code{svygrowth()} fit a lavaan model to a survey
-design. This skeleton dispatches on the class of \code{design}. Estimators other
-than MLM are not implemented yet.
+\code{svysem()}, \code{svycfa()} and \code{svygrowth()} fit a lavaan model to a
+\code{\link[survey:svydesign]{survey::svydesign()}} object. Sampling weights, strata and primary sampling
+units enter the standard errors through the design-based covariance of the
+sample moments (Gamma), which is passed to lavaan as \code{NACOV} together with
+the raw data and the sampling weights. The fit is not built from sample
+moments. \code{svysem()} uses the defaults of \code{\link[lavaan:sem]{lavaan::sem()}}, \code{svycfa()} those
+of \code{\link[lavaan:cfa]{lavaan::cfa()}}, and \code{svygrowth()} those of \code{\link[lavaan:growth]{lavaan::growth()}}.
+Arguments in \code{...} are passed on to that fitter.
+}
+\details{
+The returned object extends lavaan, so \code{\link[=coef]{coef()}}, \code{\link[=vcov]{vcov()}},
+\code{\link[lavaan:lavTestWald]{lavaan::lavTestWald()}} and \code{\link[lavaan:fitMeasures]{lavaan::fitMeasures()}} report design-based
+results. In lavaan 0.6-21, \code{\link[lavaan:parameterEstimates]{lavaan::parameterEstimates()}} and
+\code{\link[lavaan:standardizedSolution]{lavaan::standardizedSolution()}} omit standard errors unless \code{se = TRUE}
+when the object's class is not exactly \code{lavaan}. \code{\link[=summary]{summary()}} and the
+printed display add the design degrees of freedom and the estimator.
+
+MLM uses complete data. \code{missing = "ml"} is an error and names MLR as the
+estimator that will handle it. Rows that are incomplete on the model
+variables are not dropped: their sampling weight is set to 0 inside the
+design used for Gamma, which is how \code{\link[=subset]{subset()}} represents a domain, and the
+primary sampling unit structure is kept. Zero weights are legal. A negative
+weight, or a design with no positive weight, is an error.
+
+lavaan's default \code{sampling.weights.normalization = "total"} rescales
+weights so that they sum to the number of rows. Means and covariances of
+products are invariant to that constant, so Gamma is computed from the
+design's sampling weights on the same rows. The products use the maximum
+likelihood divisor (the weighted residual products, with no \code{n / (n - 1)}
+factor). \code{\link[survey:svyvar]{survey::svyvar()}} is not used. Means and second-moment products
+are stacked in one linearization, so the covariance between them is kept;
+that term is what makes a regression intercept match \code{\link[survey:svyglm]{survey::svyglm()}}.
+
+Gamma follows lavaan's model order (\code{ov.order = "force.model"} on the fit
+that receives \code{NACOV}). Without that argument lavaan reorders variables to
+the data order and pairs Gamma with the wrong columns. \code{fixed.x = TRUE},
+the default for \code{\link[lavaan:sem]{lavaan::sem()}}, is supported when those columns are the
+observed second moments, plus the means when a mean structure is estimated.
+\code{conditional.x = TRUE} is not. One group of continuous variables only.
+Clustering is taken from the design; do not pass \verb{cluster=}, which would
+double-count primary sampling units. \code{survey.lonely.psu} is read by
+\code{\link[survey:svymean]{survey::svymean()}} and is never set here.
+}
+\examples{
+design <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = 1)
+fit <- svysem(
+  "y ~ x1 + x2", design,
+  fixed.x = FALSE, meanstructure = TRUE
+)
+fit
+coef(fit)
+vcov(fit)
+summary(fit)
+cfa_fit <- svycfa("f =~ y1 + y2 + y3 + y4", design)
+growth_fit <- svygrowth(
+  "i =~ 1*y1 + 1*y2 + 1*y3 + 1*y4
+   s =~ 0*y1 + 1*y2 + 2*y3 + 3*y4",
+  design
+)
+coef(cfa_fit)
+coef(growth_fit)
 }
 \references{
 Oberski D (2014). "lavaan.survey: An R Package for Complex
@@ -38,5 +127,6 @@ Survey Analysis of Structural Equation Models." Journal of Statistical
 Software, 57(1), 1--27. \doi{10.18637/jss.v057.i01}
 }
 \seealso{
-\code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[survey:svydesign]{survey::svydesign()}}
+\link[=svysem-class]{svysem}, \code{\link[=simulate_design]{simulate_design()}}, \code{\link[lavaan:sem]{lavaan::sem()}},
+\code{\link[survey:svydesign]{survey::svydesign()}}, \code{\link[survey:svyglm]{survey::svyglm()}}
 }
