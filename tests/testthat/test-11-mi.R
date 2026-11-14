@@ -41,18 +41,22 @@ numeric_stub <- function(model, design, estimator = "MLM", ...) {
 
 test_that("parallel and sequential fits are identical", {
   skip_if_not_installed("mitools")
-  skip_if_not_installed("parallel")
   des <- mi_design()
   restore <- register_design_method("svysem", numeric_stub)
   on.exit(restore(), add = TRUE)
   sequential <- svysem("y ~ x", des, estimator = "MLM")
-  parallel <- svysem(
-    "y ~ x", des, estimator = "MLM",
-    parallel = function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)
-  )
+  # mclapply forks and is not supported on Windows. CRAN's Windows
+  # check fails the test if this call is unconditional.
+  if (.Platform$OS.type != "windows") {
+    skip_if_not_installed("parallel")
+    parallel <- svysem(
+      "y ~ x", des, estimator = "MLM",
+      parallel = function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)
+    )
+    expect_equal(coef(parallel), coef(sequential), tolerance = 0)
+    expect_equal(vcov(parallel), vcov(sequential), tolerance = 0)
+  }
   expect_s4_class(sequential, "svysem_mi")
-  expect_equal(coef(parallel), coef(sequential), tolerance = 0)
-  expect_equal(vcov(parallel), vcov(sequential), tolerance = 0)
   expect_equal(nobs(sequential), 20)
   expect_equal(sequential@df, survey::degf(des$designs[[1]]))
   expect_identical(

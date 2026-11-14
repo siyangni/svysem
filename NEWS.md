@@ -2,6 +2,7 @@
 
 * The CRAN landing-page description now states the survey-design input, the three fitters, how a multiple imputation is pooled, and the estimators this version does not fit.
 * CRAN check fixes. `coef`, `vcov` and `summary` are registered S3 methods, the unused `numDeriv` import is removed, and examples that need `mitools` are guarded.
+* Tests that compare a forked `parallel::mclapply()` fit with a sequential fit run only where forking works. Windows has no `mclapply`.
 * `coef()` and `vcov()` on a pooled object are also S4 methods, so they still run after lavaan turns those generics into S4 methods. Standardized pooling requests lavaan standard errors with `se = TRUE`.
 * A `svyrep.design` is refused with `svysem_error_design`. Replicate-weight designs are not supported yet.
 * `pooled_wald()` keeps a finite p-value when the small-sample denominator is undefined or negative. One constraint then uses the scalar Barnard-Rubin degrees of freedom.

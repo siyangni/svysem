@@ -539,16 +539,19 @@ test_that("group, cluster, and ordered arguments are classed data errors", {
 
 test_that("imputed designs pool sequential and parallel fits and record failures", {
   skip_if_not_installed("mitools")
-  skip_if_not_installed("parallel")
-  par_fn <- function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)
-  for (m in c(2L, 5L)) {
-    design <- mi_design(m, seed = 250 + m)
-    sequential <- svysem("y ~ x", design, fixed.x = FALSE)
-    parallel <- svysem("y ~ x", design, fixed.x = FALSE, parallel = par_fn)
-    expect_s4_class(sequential, "svysem_mi")
-    expect_equal(length(sequential@fits), m)
-    expect_equal(coef(parallel), coef(sequential), tolerance = 0)
-    expect_equal(vcov(parallel), vcov(sequential), tolerance = 0)
+  # mclapply forks and is not supported on Windows.
+  if (.Platform$OS.type != "windows") {
+    skip_if_not_installed("parallel")
+    par_fn <- function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)
+    for (m in c(2L, 5L)) {
+      design <- mi_design(m, seed = 250 + m)
+      sequential <- svysem("y ~ x", design, fixed.x = FALSE)
+      parallel <- svysem("y ~ x", design, fixed.x = FALSE, parallel = par_fn)
+      expect_s4_class(sequential, "svysem_mi")
+      expect_equal(length(sequential@fits), m)
+      expect_equal(coef(parallel), coef(sequential), tolerance = 0)
+      expect_equal(vcov(parallel), vcov(sequential), tolerance = 0)
+    }
   }
 
   bad <- mi_design(3, seed = 260, bad = 2L)
