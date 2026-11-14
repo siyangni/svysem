@@ -19,19 +19,19 @@
 #' @export
 svysem <- function(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...) {
   estimator <- match.arg(estimator)
-  UseMethod("svysem")
+  UseMethod("svysem", design)
 }
 
 #' @rdname svysem
 #' @export
 svycfa <- function(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...) {
   estimator <- match.arg(estimator)
-  UseMethod("svycfa")
+  UseMethod("svycfa", design)
 }
 
 #' @rdname svysem
 #' @export
 svygrowth <- function(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...) {
   estimator <- match.arg(estimator)
-  UseMethod("svygrowth")
+  UseMethod("svygrowth", design)
 }
