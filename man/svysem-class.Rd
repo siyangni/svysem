@@ -12,9 +12,9 @@
 \alias{print.svysem.summary}
 \title{Design-based SEM fit}
 \usage{
-coef.svysem(object, ...)
+\method{coef}{svysem}(object, ...)
 
-vcov.svysem(object, ...)
+\method{vcov}{svysem}(object, ...)
 
 \S4method{coef}{svysem}(object, ...)
 

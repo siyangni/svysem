@@ -71,7 +71,7 @@ test_that("parallel and sequential fits are identical", {
   expect_false(isTRUE(all.equal(over$df, pe$df)))
   expect_equal(unname(sqrt(diag(vcov(sequential)))), unname(pe$se), tolerance = 1e-10)
   expect_output(show(sequential), "svysem_mi")
-  expect_output(summary(sequential), "no.conv")
+  expect_output(print(summary(sequential)), "no.conv")
   expect_equal(lavaan::coef(sequential), coef(sequential))
   expect_equal(lavaan::nobs(sequential), nobs(sequential))
 })

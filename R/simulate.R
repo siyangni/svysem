@@ -125,7 +125,8 @@ simulate_design <- function(n_psu = 10L, n_per = 5L, n_strata = 1L,
     design <- survey::svydesign(ids = ~psu, weights = ~w, data = data)
   }
   if (isTRUE(domain)) {
-    design <- subset(design, psu != min(data$psu))
+    keep <- data$psu != min(data$psu)
+    design <- subset(design, keep)
   }
   design
 }

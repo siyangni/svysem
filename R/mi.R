@@ -22,6 +22,9 @@
 #'   imputation did not error).
 #' @slot estimator Estimator name. Only `"MLM"` is accepted.
 #' @slot svysem_call The call that created the object.
+#' @return An object of class `svysem_mi`. [coef()] returns the pooled point
+#'   estimates, [vcov()] their total covariance, and [summary()] an object of
+#'   class `svysem_mi.summary`.
 #' @seealso [pooled_estimates()], [pooled_wald()], [survey::svydesign()]
 #' @references
 #' Rubin D (1987). Multiple Imputation for Nonresponse in Surveys.
@@ -31,40 +34,42 @@
 #' Multiple Imputation." Biometrika, 86(4), 948--959.
 #' \doi{10.1093/biomet/86.4.948}
 #' @examples
-#' imp <- list(
-#'   data.frame(
-#'     y = 1:30, x = rep(1:10, 3), w = 1,
-#'     id = 1:30, strata = rep(1:2, each = 15)
-#'   ),
-#'   data.frame(
-#'     y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
-#'     id = 1:30, strata = rep(1:2, each = 15)
+#' if (requireNamespace("mitools", quietly = TRUE)) {
+#'   imp <- list(
+#'     data.frame(
+#'       y = 1:30, x = rep(1:10, 3), w = 1,
+#'       id = 1:30, strata = rep(1:2, each = 15)
+#'     ),
+#'     data.frame(
+#'       y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
+#'       id = 1:30, strata = rep(1:2, each = 15)
+#'     )
 #'   )
-#' )
-#' des <- survey::svydesign(
-#'   ids = ~id, strata = ~strata, weights = ~w,
-#'   data = mitools::imputationList(imp)
-#' )
-#' stopifnot(inherits(des, "svyimputationList"))
-#' # svysem("y ~ x", des) returns a svysem_mi object once each completed
-#' # design can be fitted. Pooling itself only needs coef() and vcov():
-#' fit_i <- function(est, v) {
-#'   dimnames(v) <- list(names(est), names(est))
-#'   structure(list(coefficients = est, variance = v), class = "svysem_eg")
+#'   des <- survey::svydesign(
+#'     ids = ~id, strata = ~strata, weights = ~w,
+#'     data = mitools::imputationList(imp)
+#'   )
+#'   stopifnot(inherits(des, "svyimputationList"))
+#'   # svysem("y ~ x", des) returns a svysem_mi object once each completed
+#'   # design can be fitted. Pooling itself only needs coef() and vcov():
+#'   fit_i <- function(est, v) {
+#'     dimnames(v) <- list(names(est), names(est))
+#'     structure(list(coefficients = est, variance = v), class = "svysem_eg")
+#'   }
+#'   registerS3method(
+#'     "coef", "svysem_eg", function(object, ...) object$coefficients,
+#'     envir = asNamespace("stats")
+#'   )
+#'   registerS3method(
+#'     "vcov", "svysem_eg", function(object, ...) object$variance,
+#'     envir = asNamespace("stats")
+#'   )
+#'   fits <- list(
+#'     fit_i(c(yx = 0.4), matrix(0.02)),
+#'     fit_i(c(yx = 0.6), matrix(0.03))
+#'   )
+#'   pooled_estimates(fits, df.com = survey::degf(des$designs[[1]]))
 #' }
-#' registerS3method(
-#'   "coef", "svysem_eg", function(object, ...) object$coefficients,
-#'   envir = asNamespace("stats")
-#' )
-#' registerS3method(
-#'   "vcov", "svysem_eg", function(object, ...) object$variance,
-#'   envir = asNamespace("stats")
-#' )
-#' fits <- list(
-#'   fit_i(c(yx = 0.4), matrix(0.02)),
-#'   fit_i(c(yx = 0.6), matrix(0.03))
-#' )
-#' pooled_estimates(fits, df.com = survey::degf(des$designs[[1]]))
 #' @export
 setClass(
   "svysem_mi",
@@ -279,21 +284,23 @@ svysem_impute <- function(model, design, estimator, on_fail, parallel, fitter,
 #' Multiple Imputation." Biometrika, 86(4), 948--959.
 #' \doi{10.1093/biomet/86.4.948}
 #' @examples
-#' imp <- list(
-#'   data.frame(
-#'     y = 1:30, x = rep(1:10, 3), w = 1,
-#'     id = 1:30, strata = rep(1:2, each = 15)
-#'   ),
-#'   data.frame(
-#'     y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
-#'     id = 1:30, strata = rep(1:2, each = 15)
+#' if (requireNamespace("mitools", quietly = TRUE)) {
+#'   imp <- list(
+#'     data.frame(
+#'       y = 1:30, x = rep(1:10, 3), w = 1,
+#'       id = 1:30, strata = rep(1:2, each = 15)
+#'     ),
+#'     data.frame(
+#'       y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
+#'       id = 1:30, strata = rep(1:2, each = 15)
+#'     )
 #'   )
-#' )
-#' des <- survey::svydesign(
-#'   ids = ~id, strata = ~strata, weights = ~w,
-#'   data = mitools::imputationList(imp)
-#' )
-#' stopifnot(inherits(des, "svyimputationList"), length(des$designs) == 2L)
+#'   des <- survey::svydesign(
+#'     ids = ~id, strata = ~strata, weights = ~w,
+#'     data = mitools::imputationList(imp)
+#'   )
+#'   stopifnot(inherits(des, "svyimputationList"), length(des$designs) == 2L)
+#' }
 #' @export
 svysem.svyimputationList <- function(model, design,
                                       estimator = c("MLM", "WLSMV", "MLR"), ...,

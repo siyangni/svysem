@@ -63,12 +63,14 @@ svysem_parent_method <- function(generic, object, ...) {
 }
 
 #' @rdname svysem-class
+#' @method coef svysem
 #' @export
 coef.svysem <- function(object, ...) {
   svysem_parent_method("coef", object, ...)
 }
 
 #' @rdname svysem-class
+#' @method vcov svysem
 #' @export
 vcov.svysem <- function(object, ...) {
   svysem_parent_method("vcov", object, ...)

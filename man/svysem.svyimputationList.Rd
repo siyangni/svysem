@@ -64,21 +64,23 @@ Only \code{estimator = "MLM"} is accepted. \code{parallel} is any function of
 Tests and examples use at most two cores.
 }
 \examples{
-imp <- list(
-  data.frame(
-    y = 1:30, x = rep(1:10, 3), w = 1,
-    id = 1:30, strata = rep(1:2, each = 15)
-  ),
-  data.frame(
-    y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
-    id = 1:30, strata = rep(1:2, each = 15)
+if (requireNamespace("mitools", quietly = TRUE)) {
+  imp <- list(
+    data.frame(
+      y = 1:30, x = rep(1:10, 3), w = 1,
+      id = 1:30, strata = rep(1:2, each = 15)
+    ),
+    data.frame(
+      y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
+      id = 1:30, strata = rep(1:2, each = 15)
+    )
   )
-)
-des <- survey::svydesign(
-  ids = ~id, strata = ~strata, weights = ~w,
-  data = mitools::imputationList(imp)
-)
-stopifnot(inherits(des, "svyimputationList"), length(des$designs) == 2L)
+  des <- survey::svydesign(
+    ids = ~id, strata = ~strata, weights = ~w,
+    data = mitools::imputationList(imp)
+  )
+  stopifnot(inherits(des, "svyimputationList"), length(des$designs) == 2L)
+}
 }
 \references{
 Rubin D (1987). Multiple Imputation for Nonresponse in Surveys.

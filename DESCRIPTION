@@ -1,6 +1,6 @@
 Package: svysem
 Title: Design-Based Structural Equation Models for Complex Surveys
-Version: 0.0.0.9000
+Version: 0.0.1
 Authors@R: person("Siyang", "Ni", email = "johnni.nj@gmail.com", role = c("aut", "cre", "cph"))
 Description: Design-based estimation of structural equation models fitted
     with 'lavaan' for data stored in a 'survey' design. Sampling weights,
@@ -19,7 +19,6 @@ Depends: R (>= 4.1.0)
 Imports:
     lavaan (>= 0.6-21),
     methods,
-    numDeriv,
     stats,
     survey (>= 4.5)
 Suggests:
