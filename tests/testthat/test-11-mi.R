@@ -195,8 +195,10 @@ test_that("a lavaan stub records convergence and is pooled with lavaan coef", {
   nose <- function(model, design, estimator = "MLM", ...) {
     lavaan::sem("y ~ x", data = design$variables, se = "none")
   }
-  restore_nose <- register_design_method("svysem", nose)
-  on.exit(restore_nose(), add = TRUE)
+  # The exit handler above restores the method captured before lavaan_stub.
+  # A second handler that restored this stub would run afterwards and leave
+  # it installed for the rest of the suite.
+  register_design_method("svysem", nose)
   quiet <- svysem("y ~ x", des)
   expect_true(all(quiet@status$no.se))
   expect_false(any(quiet@status$no.conv))

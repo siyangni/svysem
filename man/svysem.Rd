@@ -44,7 +44,8 @@ svygrowth(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
 \code{\link[lavaan:growth]{lavaan::growth()}}.}
 
 \item{design}{A \code{survey.design} or \code{survey.design2} object, including the
-result of \code{\link[=subset]{subset()}}.}
+result of \code{\link[=subset]{subset()}}. A \code{svyrep.design} is not supported yet and signals
+\code{svysem_error_design}.}
 
 \item{estimator}{Variance estimator. Only \code{"MLM"} is implemented. \code{"WLSMV"}
 and \code{"MLR"} are reserved and raise \code{svysem_error_estimator}.}
@@ -100,7 +101,10 @@ observed second moments, plus the means when a mean structure is estimated.
 \code{conditional.x = TRUE} is not. One group of continuous variables only.
 Clustering is taken from the design; do not pass \verb{cluster=}, which would
 double-count primary sampling units. \code{survey.lonely.psu} is read by
-\code{\link[survey:svymean]{survey::svymean()}} and is never set here.
+\code{\link[survey:svymean]{survey::svymean()}} and is never set here. Replicate-weight designs
+(\code{svyrep.design}, including the result of \code{\link[survey:as.svrepdesign]{survey::as.svrepdesign()}}) are
+not supported yet: the fit signals \code{svysem_error_design} and the message
+says that this design is not supported yet.
 }
 \examples{
 design <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = 1)

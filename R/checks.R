@@ -69,6 +69,17 @@ svysem_check_missing <- function(missing_value) {
 }
 
 svysem_stop_design <- function(design) {
+  # Replicate-weight designs are a later estimator. Name them before the
+  # generic class list so the failure is not an opaque survey error.
+  if (inherits(design, "svyrep.design")) {
+    svysem_stop(
+      paste0(
+        "this design is not supported yet. ",
+        "svysem() accepts survey.design and survey.design2, not svyrep.design."
+      ),
+      "svysem_error_design"
+    )
+  }
   svysem_stop(
     paste0(
       "design must be a survey.design or survey.design2 object. ",

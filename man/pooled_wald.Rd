@@ -30,7 +30,11 @@ method inside each imputation. Inequality constraints are not supported.
 }
 \details{
 For a \link[=svysem_mi-class]{svysem_mi} object, \code{df.com} defaults to the design degrees
-of freedom.
+of freedom. The small-sample denominator follows mitml when that value is
+positive. When it is undefined (\code{k * (m - 1) <= 4}) or negative, one
+constraint uses the scalar Barnard-Rubin degrees of freedom and several
+constraints use a positive harmonic mean of the large-sample denominator
+and the observed-data degrees of freedom.
 }
 \examples{
 fit_i <- function(est, v) {

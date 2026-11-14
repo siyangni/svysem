@@ -40,12 +40,16 @@
 #' `conditional.x = TRUE` is not. One group of continuous variables only.
 #' Clustering is taken from the design; do not pass `cluster=`, which would
 #' double-count primary sampling units. `survey.lonely.psu` is read by
-#' [survey::svymean()] and is never set here.
+#' [survey::svymean()] and is never set here. Replicate-weight designs
+#' (`svyrep.design`, including the result of [survey::as.svrepdesign()]) are
+#' not supported yet: the fit signals `svysem_error_design` and the message
+#' says that this design is not supported yet.
 #'
 #' @param model Model syntax, as for [lavaan::sem()], [lavaan::cfa()] or
 #'   [lavaan::growth()].
 #' @param design A `survey.design` or `survey.design2` object, including the
-#'   result of [subset()].
+#'   result of [subset()]. A `svyrep.design` is not supported yet and signals
+#'   `svysem_error_design`.
 #' @param estimator Variance estimator. Only `"MLM"` is implemented. `"WLSMV"`
 #'   and `"MLR"` are reserved and raise `svysem_error_estimator`.
 #' @param ... Passed to [lavaan::sem()], [lavaan::cfa()] or [lavaan::growth()].

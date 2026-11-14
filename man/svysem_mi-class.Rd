@@ -6,7 +6,9 @@
 \alias{svysem_mi}
 \alias{show,svysem_mi-method}
 \alias{coef.svysem_mi}
+\alias{coef,svysem_mi-method}
 \alias{vcov.svysem_mi}
+\alias{vcov,svysem_mi-method}
 \alias{nobs.svysem_mi}
 \alias{summary.svysem_mi}
 \alias{fitMeasures,svysem_mi-method}
@@ -16,7 +18,11 @@
 
 coef.svysem_mi(object, ...)
 
+\S4method{coef}{svysem_mi}(object, ...)
+
 vcov.svysem_mi(object, ...)
+
+\S4method{vcov}{svysem_mi}(object, ...)
 
 \method{nobs}{svysem_mi}(object, ...)
 
@@ -62,7 +68,9 @@ The object is returned by \code{\link[=svysem]{svysem()}}, \code{\link[=svycfa]{
 \code{design} is a \code{svyimputationList}. Each completed design is fitted
 separately. \code{on_fail = "stop"} stops at the first imputation that errors.
 \code{on_fail = "omit"} records that imputation in \code{status} and pools the rest,
-provided at least two fits remain.
+provided at least two fits remain. \code{\link[=coef]{coef()}} and \code{\link[=vcov]{vcov()}} are the Rubin
+pooled estimate and its total covariance. Both are S4 methods, so they
+still dispatch after lavaan has turned those generics into S4 methods.
 }
 \section{Slots}{
 

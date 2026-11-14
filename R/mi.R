@@ -9,7 +9,9 @@
 #' `design` is a `svyimputationList`. Each completed design is fitted
 #' separately. `on_fail = "stop"` stops at the first imputation that errors.
 #' `on_fail = "omit"` records that imputation in `status` and pools the rest,
-#' provided at least two fits remain.
+#' provided at least two fits remain. [coef()] and [vcov()] are the Rubin
+#' pooled estimate and its total covariance. Both are S4 methods, so they
+#' still dispatch after lavaan has turned those generics into S4 methods.
 #'
 #' @aliases svysem_mi
 #' @slot fits Successful fits, in imputation order, with failures removed.
