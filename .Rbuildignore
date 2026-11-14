@@ -8,3 +8,5 @@
 ^README\.md$
 ^LICENSE$
 ^\.github$
+^svysem\.Rcheck$
+^svysem_.*\.tar\.gz$

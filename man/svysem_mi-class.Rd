@@ -9,18 +9,21 @@
 \alias{vcov.svysem_mi}
 \alias{nobs.svysem_mi}
 \alias{summary.svysem_mi}
+\alias{print.svysem_mi.summary}
 \alias{fitMeasures,svysem_mi-method}
 \title{Multiply imputed design-based SEM}
 \usage{
 \S4method{show}{svysem_mi}(object)
 
-coef.svysem_mi(object, ...)
+\method{coef}{svysem_mi}(object, ...)
 
-vcov.svysem_mi(object, ...)
+\method{vcov}{svysem_mi}(object, ...)
 
 \method{nobs}{svysem_mi}(object, ...)
 
-summary.svysem_mi(object, ...)
+\method{summary}{svysem_mi}(object, ...)
+
+\method{print}{svysem_mi.summary}(x, ...)
 
 \S4method{fitMeasures}{svysem_mi}(
   object,
@@ -39,6 +42,8 @@ summary.svysem_mi(object, ...)
 
 \item{...}{Further arguments, ignored.}
 
+\item{x}{A summary of a \code{svysem_mi} object.}
+
 \item{fit.measures}{\code{"all"} or a character vector of measure names to keep.}
 
 \item{baseline.model}{Accepted for compatibility with lavaan's generic.
@@ -50,6 +55,11 @@ Not used: each imputation already carries its own baseline.}
 
 \item{output}{\code{"vector"} (default), or \code{"matrix"} / \code{"data.frame"} for a
 one-row data frame.}
+}
+\value{
+An object of class \code{svysem_mi}. \code{\link[=coef]{coef()}} returns the pooled point
+estimates, \code{\link[=vcov]{vcov()}} their total covariance, and \code{\link[=summary]{summary()}} an object of
+class \code{svysem_mi.summary}.
 }
 \description{
 Fits of one model to each completed survey design, pooled afterwards with
@@ -85,40 +95,42 @@ imputation did not error).}
 }}
 
 \examples{
-imp <- list(
-  data.frame(
-    y = 1:30, x = rep(1:10, 3), w = 1,
-    id = 1:30, strata = rep(1:2, each = 15)
-  ),
-  data.frame(
-    y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
-    id = 1:30, strata = rep(1:2, each = 15)
+if (requireNamespace("mitools", quietly = TRUE)) {
+  imp <- list(
+    data.frame(
+      y = 1:30, x = rep(1:10, 3), w = 1,
+      id = 1:30, strata = rep(1:2, each = 15)
+    ),
+    data.frame(
+      y = 1:30 + 0.2, x = rep(1:10, 3), w = 1,
+      id = 1:30, strata = rep(1:2, each = 15)
+    )
   )
-)
-des <- survey::svydesign(
-  ids = ~id, strata = ~strata, weights = ~w,
-  data = mitools::imputationList(imp)
-)
-stopifnot(inherits(des, "svyimputationList"))
-# svysem("y ~ x", des) returns a svysem_mi object once each completed
-# design can be fitted. Pooling itself only needs coef() and vcov():
-fit_i <- function(est, v) {
-  dimnames(v) <- list(names(est), names(est))
-  structure(list(coefficients = est, variance = v), class = "svysem_eg")
+  des <- survey::svydesign(
+    ids = ~id, strata = ~strata, weights = ~w,
+    data = mitools::imputationList(imp)
+  )
+  stopifnot(inherits(des, "svyimputationList"))
+  # svysem("y ~ x", des) returns a svysem_mi object once each completed
+  # design can be fitted. Pooling itself only needs coef() and vcov():
+  fit_i <- function(est, v) {
+    dimnames(v) <- list(names(est), names(est))
+    structure(list(coefficients = est, variance = v), class = "svysem_eg")
+  }
+  registerS3method(
+    "coef", "svysem_eg", function(object, ...) object$coefficients,
+    envir = asNamespace("stats")
+  )
+  registerS3method(
+    "vcov", "svysem_eg", function(object, ...) object$variance,
+    envir = asNamespace("stats")
+  )
+  fits <- list(
+    fit_i(c(yx = 0.4), matrix(0.02)),
+    fit_i(c(yx = 0.6), matrix(0.03))
+  )
+  pooled_estimates(fits, df.com = survey::degf(des$designs[[1]]))
 }
-registerS3method(
-  "coef", "svysem_eg", function(object, ...) object$coefficients,
-  envir = asNamespace("stats")
-)
-registerS3method(
-  "vcov", "svysem_eg", function(object, ...) object$variance,
-  envir = asNamespace("stats")
-)
-fits <- list(
-  fit_i(c(yx = 0.4), matrix(0.02)),
-  fit_i(c(yx = 0.6), matrix(0.03))
-)
-pooled_estimates(fits, df.com = survey::degf(des$designs[[1]]))
 }
 \references{
 Rubin D (1987). Multiple Imputation for Nonresponse in Surveys.

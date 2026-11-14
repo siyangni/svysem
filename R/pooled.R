@@ -345,6 +345,7 @@ pooled_wald <- function(object, constraints, df.com = NULL) {
 }
 
 #' @rdname svysem_mi-class
+#' @method coef svysem_mi
 #' @export
 coef.svysem_mi <- function(object, ...) {
   pe <- pooled_estimates(object)
@@ -352,6 +353,7 @@ coef.svysem_mi <- function(object, ...) {
 }
 
 #' @rdname svysem_mi-class
+#' @method vcov svysem_mi
 #' @export
 vcov.svysem_mi <- function(object, ...) {
   qu <- svysem_qhat_uhat(object@fits)
@@ -365,13 +367,28 @@ nobs.svysem_mi <- function(object, ...) {
 }
 
 #' @rdname svysem_mi-class
+#' @method summary svysem_mi
 #' @export
 summary.svysem_mi <- function(object, ...) {
-  st <- object@status
+  structure(
+    list(
+      estimates = pooled_estimates(object),
+      status = object@status,
+      df = object@df
+    ),
+    class = "svysem_mi.summary"
+  )
+}
+
+#' @param x A summary of a `svysem_mi` object.
+#' @rdname svysem_mi-class
+#' @export
+print.svysem_mi.summary <- function(x, ...) {
+  st <- x$status
   cat("Pooled estimates (Rubin's rules)\n")
   cat(
     "Complete-data degrees of freedom (design df): ",
-    format(object@df), "\n",
+    format(x$df), "\n",
     sep = ""
   )
   cat("Imputations: ", nrow(st), "\n", sep = "")
@@ -379,9 +396,8 @@ summary.svysem_mi <- function(object, ...) {
   cat("  no.se: ", sum(st$no.se), "\n", sep = "")
   cat("  no.npd: ", sum(st$no.npd), "\n", sep = "")
   cat("  failed: ", sum(nzchar(st$message)), "\n", sep = "")
-  est <- pooled_estimates(object)
-  print(est)
-  invisible(est)
+  print(x$estimates)
+  invisible(x)
 }
 
 svysem_fit_measure_table <- function(object, fm.args) {

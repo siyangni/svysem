@@ -3,7 +3,6 @@
 
 #' @import methods
 #' @import stats
-#' @importFrom lavaan lavaan
+#' @importFrom lavaan fitMeasures
 #' @importFrom survey svydesign
-#' @importFrom numDeriv jacobian
 NULL
