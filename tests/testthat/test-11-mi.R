@@ -45,8 +45,7 @@ test_that("parallel and sequential fits are identical", {
   restore <- register_design_method("svysem", numeric_stub)
   on.exit(restore(), add = TRUE)
   sequential <- svysem("y ~ x", des, estimator = "MLM")
-  # mclapply forks and is not supported on Windows. CRAN's Windows
-  # check fails the test if this call is unconditional.
+  # mclapply forks, which Windows does not support.
   if (.Platform$OS.type != "windows") {
     skip_if_not_installed("parallel")
     parallel <- svysem(

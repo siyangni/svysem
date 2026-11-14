@@ -188,7 +188,7 @@ After the gates, the code that stays in the dissertation repo for Papers 1 and 2
 1. **MLM → MLR** for SEM in Papers 1–3.
 2. **Paper 1 measurement models: weights only → full-design WLSMV**, after test 6 passes.
 3. **Paper 3 trait models (`47`, `53`): weights only → full design.** Loadings and trait scores stay the same; CFI, RMSEA and SRMR change.
-4. **Paper 3 pooling df (deferred by the user, 2026-11-13; to be handled later).** `33` and `41` pool with `mitools::MIcombine`, whose small-sample df differs from the Barnard–Rubin df of Papers 1 and 2 (finding 13). Switching to one rule changes confidence limits slightly where t-based intervals are used.
+4. **Paper 3 pooling df (deferred 2026-11-13; to be handled later).** `33` and `41` pool with `mitools::MIcombine`, whose small-sample df differs from the Barnard–Rubin df of Papers 1 and 2 (finding 13). Switching to one rule changes confidence limits slightly where t-based intervals are used.
 5. **Paper 1 proportionality test:** keep the minimum-distance test as analysis code, or replace it with `pooled_wald()` on the 3 nonlinear constraints (asymptotically equivalent, numerically different).
 6. **FIML instead of MI:** available after phase 5, not proposed.
 
@@ -229,13 +229,10 @@ Part of the definition of done for 0.1.0. *Writing R Extensions* and the *CRAN R
 
 Ordered so that the dissertation is served first and the riskiest piece comes last.
 
-- **Phase 0, serial.** Package skeleton with `usethis`. `git init -b main`, `gh repo create svysem --public`. First tasks: rerun the finding 4 check on lavaan's development version and record the result; draft the upstream reports for the user to send.
-- **Phase 1, two agents in parallel worktrees.**
-  - *MLM agent*: `gamma_linear.R`, `class.R`, `generics.R`, `checks.R`, `simulate.R`, fixtures. Tests 1–5, 12.
-  - *MI agent*: `rubin.R`, `constraints.R`, `pooled.R`, `mi.R` against a stub fit. Tests 10–11.
-  - Merge. Run **Gates P1 and P2**.
+- **Phase 0.** Package skeleton with `usethis`. `git init -b main`, `gh repo create svysem --public`. First tasks: rerun the finding 4 check on lavaan's development version and record the result; draft the upstream reports.
+- **Phase 1.** MLM (`gamma_linear.R`, `class.R`, `generics.R`, `checks.R`, `simulate.R`, fixtures, tests 1–5 and 12) and multiple imputation (`rubin.R`, `constraints.R`, `pooled.R`, `mi.R`, tests 10–11). Merge. Run **Gates P1 and P2**.
 - **Phase 2, serial.** `predict.R` (test 9). Run **Gate P3** for `33`, `21` and the factor scores. Help pages, vignettes 1–2, README. Release **0.1.0** on GitHub: MLM, MI, factor scores.
-- **Phase 3, serial.** `gamma_replicate.R`: WLSMV and `svyrep.design` (test 6). Vignette 3. Release **0.2.0**. The first CRAN submission is possible from here, as a user decision.
+- **Phase 3, serial.** `gamma_replicate.R`: WLSMV and `svyrep.design` (test 6). Vignette 3. Release **0.2.0**. The first CRAN submission is possible from here.
 - **Phase 4, serial.** `sandwich_mlr.R`: MLR on complete data, then FIML (tests 7–8). Before coding, check whether lavaan 0.7 offers a public way to supply a user meat or information matrix; if it does, use it and skip slot injection. Gate P3 for `47`, `53`. Release **0.3.0**.
 
 ## References (each checked against the full text before it enters the package)

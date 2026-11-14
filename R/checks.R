@@ -135,10 +135,7 @@ svysem_check_arguments <- function(dots, variables) {
       "svysem_error_data"
     )
   }
-  # Refuse before lavaan is called. On lavaan 0.7-3 the preliminary fit
-  # otherwise errors inside lav_samp_gamma() and the classed error is never
-  # reached. The sentence, including the moment name from the y ~ x1
-  # snapshot, is the text already in tests/testthat/_snaps/errors.md.
+  # Reject this before lavaan is called.
   cx <- dots$conditional.x
   if (!is.null(cx) && !isFALSE(cx)) {
     svysem_stop(

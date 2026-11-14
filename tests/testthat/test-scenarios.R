@@ -259,10 +259,9 @@ test_that("zero weights do not change point estimates, and imputation nobs ignor
   fit_dropped <- svysem("y ~ x1", dropped, fixed.x = FALSE, meanstructure = TRUE)
   expect_rel_equal(coef(fit_zeros), coef(fit_dropped), 1e-8)
   n_pos <- sum(data$w > 0)
-  # The single-design object has no nobs() method of its own. lavaan's nobs
-  # is the one that runs. Observed with lavaan 0.6-21: it equals the number
-  # of rows (40 here), so the four zero-weight rows are counted. nobs() on
-  # an imputation object counts only positive weights.
+  # The single-design object uses lavaan's nobs(), which counts every row,
+  # including zero-weight rows. nobs() on an imputation object counts only
+  # positive weights.
   observed <- as.numeric(lavaan::nobs(fit_zeros))
   expect_true(is.finite(observed))
   expect_gte(observed, n_pos)
@@ -539,7 +538,7 @@ test_that("group, cluster, and ordered arguments are classed data errors", {
 
 test_that("imputed designs pool sequential and parallel fits and record failures", {
   skip_if_not_installed("mitools")
-  # mclapply forks and is not supported on Windows.
+  # mclapply forks, which Windows does not support.
   if (.Platform$OS.type != "windows") {
     skip_if_not_installed("parallel")
     par_fn <- function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)
