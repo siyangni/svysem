@@ -32,7 +32,9 @@ the design degrees of freedom.
 \details{
 \code{t} is the t statistic, the pooled estimate divided by its standard error,
 not the total variance. With \code{standardized = TRUE}, each fit must be a
-lavaan object. Loadings, regressions and variances are pooled on the
+lavaan object. Standard errors on that table are requested with
+\code{se = TRUE}, because lavaan 0.6-21 omits them when the fit's class is not
+exactly \code{lavaan}. Loadings, regressions and variances are pooled on the
 \code{std.all} scale. Correlations (\verb{~~} with different left- and right-hand
 sides) are pooled on the Fisher z scale, \code{z = atanh(r)} with
 \code{se_z = se_r / (1 - r^2)}. Reported \code{est}, \code{se} and confidence limits are

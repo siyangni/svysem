@@ -117,7 +117,8 @@ svysem_check_level <- function(level) {
 }
 
 svysem_std_piece <- function(fit) {
-  ss <- lavaan::standardizedSolution(fit, type = "std.all")
+  # lavaan 0.6-21 omits se unless se=TRUE when class[1] is not "lavaan".
+  ss <- lavaan::standardizedSolution(fit, type = "std.all", se = TRUE)
   needed <- c("lhs", "op", "rhs", "est.std", "se")
   if (!all(needed %in% names(ss))) {
     svysem_stop(
@@ -216,7 +217,9 @@ svysem_pool_standardized <- function(fits, level, df.com) {
 #'
 #' `t` is the t statistic, the pooled estimate divided by its standard error,
 #' not the total variance. With `standardized = TRUE`, each fit must be a
-#' lavaan object. Loadings, regressions and variances are pooled on the
+#' lavaan object. Standard errors on that table are requested with
+#' `se = TRUE`, because lavaan 0.6-21 omits them when the fit's class is not
+#' exactly `lavaan`. Loadings, regressions and variances are pooled on the
 #' `std.all` scale. Correlations (`~~` with different left- and right-hand
 #' sides) are pooled on the Fisher z scale, `z = atanh(r)` with
 #' `se_z = se_r / (1 - r^2)`. Reported `est`, `se` and confidence limits are
@@ -291,7 +294,11 @@ pooled_estimates <- function(object, standardized = FALSE, level = 0.95,
 #' method inside each imputation. Inequality constraints are not supported.
 #'
 #' For a [svysem_mi-class] object, `df.com` defaults to the design degrees
-#' of freedom.
+#' of freedom. The small-sample denominator follows mitml when that value is
+#' positive. When it is undefined (`k * (m - 1) <= 4`) or negative, one
+#' constraint uses the scalar Barnard-Rubin degrees of freedom and several
+#' constraints use a positive harmonic mean of the large-sample denominator
+#' and the observed-data degrees of freedom.
 #'
 #' @param object A list of objects with [stats::coef()] and [stats::vcov()],
 #'   or a [svysem_mi-class] object.
@@ -353,12 +360,24 @@ coef.svysem_mi <- function(object, ...) {
 }
 
 #' @rdname svysem_mi-class
+#' @export
+setMethod("coef", "svysem_mi", function(object, ...) {
+  coef.svysem_mi(object, ...)
+})
+
+#' @rdname svysem_mi-class
 #' @method vcov svysem_mi
 #' @export
 vcov.svysem_mi <- function(object, ...) {
   qu <- svysem_qhat_uhat(object@fits)
   rubin_pool(qu$Qhat, qu$Uhat, df.com = NULL)$total
 }
+
+#' @rdname svysem_mi-class
+#' @export
+setMethod("vcov", "svysem_mi", function(object, ...) {
+  vcov.svysem_mi(object, ...)
+})
 
 #' @rdname svysem_mi-class
 #' @export

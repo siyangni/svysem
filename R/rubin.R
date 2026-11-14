@@ -149,25 +149,41 @@ rubin_d1 <- function(Qhat, Uhat, df.com = NULL) {
   t_tilde <- (1 + r) * Ubar
   f_stat <- as.numeric(t(Qbar) %*% solve(t_tilde) %*% Qbar / k)
   t_df <- k * (m - 1)
-  if (is.null(df.com)) {
-    if (t_df > 4) {
-      v <- 4 + (t_df - 4) * (1 + (1 - 2 / t_df) / r)^2
-    } else {
-      v <- t_df * (1 + 1 / k) * (1 + 1 / r)^2 / 2
-    }
+  v_large <- if (t_df > 4) {
+    4 + (t_df - 4) * (1 + (1 - 2 / t_df) / r)^2
   } else {
-    # mitml 0.4-5 small-sample denominator, used whenever df.com is supplied.
+    t_df * (1 + 1 / k) * (1 + 1 / r)^2 / 2
+  }
+  if (is.null(df.com)) {
+    v <- v_large
+  } else {
+    # mitml 0.4-5 small-sample denominator. It divides by t_df - 4 and by
+    # t_df - 2, so it is undefined for k * (m - 1) <= 4, and with a design
+    # df of only a few units the result can be negative.
     a <- r * t_df / (t_df - 2)
     vstar <- ((df.com + 1) / (df.com + 3)) * df.com
-    c0 <- 1 / (t_df - 4)
-    c1 <- vstar - 2 * (1 + a)
-    c2 <- vstar - 4 * (1 + a)
-    z <- 1 / c2 +
-      c0 * (a^2 * c1 / ((1 + a)^2 * c2)) +
-      c0 * (8 * a^2 * c1 / ((1 + a) * c2^2) + 4 * a^2 / ((1 + a) * c2)) +
-      c0 * (4 * a^2 / (c2 * c1) + 16 * a^2 * c1 / c2^3) +
-      c0 * (8 * a^2 / c2^2)
-    v <- 4 + 1 / z
+    v <- NA_real_
+    if (is.finite(a) && t_df > 4) {
+      c0 <- 1 / (t_df - 4)
+      c1 <- vstar - 2 * (1 + a)
+      c2 <- vstar - 4 * (1 + a)
+      z <- 1 / c2 +
+        c0 * (a^2 * c1 / ((1 + a)^2 * c2)) +
+        c0 * (8 * a^2 * c1 / ((1 + a) * c2^2) + 4 * a^2 / ((1 + a) * c2)) +
+        c0 * (4 * a^2 / (c2 * c1) + 16 * a^2 * c1 / c2^3) +
+        c0 * (8 * a^2 / c2^2)
+      v <- 4 + 1 / z
+    }
+    if (!is.finite(v) || v <= 0) {
+      if (k == 1L) {
+        v <- rubin_pool(Qhat, Uhat, df.com = df.com)$df[[1L]]
+      } else if (is.finite(v_large) && v_large > 0 &&
+                   is.finite(vstar) && vstar > 0) {
+        v <- 1 / (1 / v_large + 1 / vstar)
+      } else {
+        v <- vstar
+      }
+    }
   }
   list(
     F = f_stat, df1 = as.numeric(k), df2 = as.numeric(v),
