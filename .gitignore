@@ -4,4 +4,6 @@
 .Ruserdata
 .worktrees/
 *.tar.gz
+*.sha256
+svysem.Rcheck
 .DS_Store

@@ -22,14 +22,11 @@ Imports:
     stats,
     survey (>= 4.5)
 Suggests:
-    knitr,
     lavaan.mi,
     mice,
     mitml,
     mitools,
     parallel,
-    rmarkdown,
-    semTools,
     testthat (>= 3.0.0)
 Encoding: UTF-8
 Language: en-US
