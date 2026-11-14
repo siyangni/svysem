@@ -13,6 +13,17 @@ se_ratio_ok <- function(oracle_se, fit_se, factor) {
 }
 
 test_that("MLM matches the lavaan.survey fixtures up to the svyvar factor", {
+  # lavaan 0.7-3 warns from lav_partable_check_std_def() about the defined
+  # parameter dmean (mx and my, the third fixture). A warning inside a test
+  # does not fail R CMD check. The .rds files stay the lavaan.survey oracle;
+  # they are not regenerated to silence this.
+  withCallingHandlers(
+    warning = function(w) {
+      if (grepl("dmean", conditionMessage(w), fixed = TRUE)) {
+        invokeRestart("muffleWarning")
+      }
+    },
+    expr = {
   paths <- list.files(
     testthat::test_path("fixtures"),
     pattern = "\\.rds$",
@@ -82,4 +93,6 @@ test_that("MLM matches the lavaan.survey fixtures up to the svyvar factor", {
       factor
     ))
   }
+    }
+  )
 })
