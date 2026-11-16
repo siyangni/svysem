@@ -217,12 +217,12 @@ Arguments in \code{...} are passed on to that fitter.
 \details{
 The returned object extends lavaan, so \code{\link[=coef]{coef()}}, \code{\link[=vcov]{vcov()}},
 \code{\link[lavaan:lavTestWald]{lavaan::lavTestWald()}} and \code{\link[lavaan:fitMeasures]{lavaan::fitMeasures()}} report design-based
-results. \code{\link[lavaan:parameterEstimates]{lavaan::parameterEstimates()}} and
-\code{\link[lavaan:standardizedSolution]{lavaan::standardizedSolution()}} omit standard errors unless \code{se = TRUE},
-because the object's class is \code{svysem} rather than \code{lavaan}. \code{se = TRUE}
-returns the design-based standard errors, matching \code{sqrt(diag(vcov()))}.
-\code{\link[=summary]{summary()}} and the printed display add the design degrees of freedom and
-the estimator.
+results. \link[=parameterEstimates]{parameterEstimates()} and
+\link[=standardizedSolution]{standardizedSolution()} include the
+design-based standard errors and confidence intervals. lavaan's own
+functions omit those columns unless \code{se = TRUE}, because the object's
+class is \code{svysem} rather than \code{lavaan}. \code{\link[=summary]{summary()}} and the printed
+display add the design degrees of freedom and the estimator.
 
 \code{"MLM"} is maximum likelihood with a Satorra-Bentler adjustment for
 complete continuous data. \code{missing = "ml"} is an error and names MLR as the

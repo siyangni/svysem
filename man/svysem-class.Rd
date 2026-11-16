@@ -40,9 +40,10 @@ The class extends \code{lavaan}. See \code{\link[=svysem]{svysem()}} for the fit
 An object of class \code{svysem} is a \link[lavaan:lavaan-class]{lavaan::lavaan} fit whose standard
 errors use the survey design. Where the estimator has a scaled test, that
 test uses the design too. \code{\link[=coef]{coef()}}, \code{\link[=vcov]{vcov()}},
-\code{\link[lavaan:parameterEstimates]{lavaan::parameterEstimates()}}, \code{\link[lavaan:standardizedSolution]{lavaan::standardizedSolution()}},
-\code{\link[lavaan:lavTestWald]{lavaan::lavTestWald()}} and \code{\link[lavaan:fitMeasures]{lavaan::fitMeasures()}} therefore report
-design-based results with no further step.
+\link[=parameterEstimates]{parameterEstimates()},
+\link[=standardizedSolution]{standardizedSolution()}, \code{\link[lavaan:lavTestWald]{lavaan::lavTestWald()}} and
+\code{\link[lavaan:fitMeasures]{lavaan::fitMeasures()}} therefore report design-based results with no
+further step.
 }
 \section{Slots}{
 

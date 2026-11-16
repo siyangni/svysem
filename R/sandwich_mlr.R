@@ -151,9 +151,15 @@ svysem_check_score_balance <- function(weighted) {
   invisible(NULL)
 }
 
-# lavScores() returns unweighted scores. After listwise deletion it errors
-# ("non-conformable arrays") even though the casewise log-likelihood is
-# finite. That derivative is already multiplied by lavaan's sampling weight.
+# lavaan 0.6 returns unweighted scores. lavaan 0.7 multiplies them by the
+# sampling weight, so the column sums equal the weighted gradient. After
+# listwise deletion lavScores() errors ("non-conformable arrays") even though
+# the casewise log-likelihood is finite. That derivative is already multiplied
+# by lavaan's sampling weight.
+svysem_lavscores_weighted <- function() {
+  packageVersion("lavaan") >= "0.7"
+}
+
 svysem_casewise_scores <- function(fit, numerical) {
   if (isTRUE(numerical)) {
     return(list(scores = svysem_numerical_scores(fit), weighted = TRUE))
@@ -165,7 +171,7 @@ svysem_casewise_scores <- function(fit, numerical) {
   usable <- !inherits(raw, "error") && is.matrix(raw) &&
     nrow(raw) > 0L && ncol(raw) > 0L
   if (usable) {
-    return(list(scores = raw, weighted = FALSE))
+    return(list(scores = raw, weighted = svysem_lavscores_weighted()))
   }
   if (!inherits(raw, "error")) {
     svysem_stop(

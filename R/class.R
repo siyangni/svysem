@@ -3,9 +3,10 @@
 #' An object of class `svysem` is a [lavaan::lavaan-class] fit whose standard
 #' errors use the survey design. Where the estimator has a scaled test, that
 #' test uses the design too. [coef()], [vcov()],
-#' [lavaan::parameterEstimates()], [lavaan::standardizedSolution()],
-#' [lavaan::lavTestWald()] and [lavaan::fitMeasures()] therefore report
-#' design-based results with no further step.
+#' [parameterEstimates()][parameterEstimates],
+#' [standardizedSolution()][standardizedSolution], [lavaan::lavTestWald()] and
+#' [lavaan::fitMeasures()] therefore report design-based results with no
+#' further step.
 #'
 #' @slot df Design degrees of freedom, [survey::degf()] of the design passed
 #'   to [svysem()], [svycfa()] or [svygrowth()].

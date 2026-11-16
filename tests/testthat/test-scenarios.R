@@ -361,24 +361,28 @@ test_that("svycfa and svygrowth return design-based svysem fits", {
   }
 })
 
-test_that("parameterEstimates(se = TRUE) returns the design-based standard errors", {
+test_that("parameterEstimates() returns the design-based standard errors", {
   design <- cluster_design(15)
   fit <- svysem("y ~ x1 + x2", design, fixed.x = FALSE, meanstructure = TRUE)
-  pe0 <- parameterEstimates(fit)
-  ss0 <- standardizedSolution(fit)
-  # lavaan omits se unless se=TRUE when class[1] is not "lavaan".
-  # svysem has to stay the first class so show() and summary() dispatch.
-  expect_false("se" %in% names(pe0))
-  expect_false("se" %in% names(ss0))
+  # This file attaches lavaan, which masks svysem's functions. The package
+  # functions are called by name. lavaan's own functions still omit se.
+  pe <- svysem::parameterEstimates(fit)
+  ss <- svysem::standardizedSolution(fit)
+  expect_true(all(c("se", "z", "pvalue", "ci.lower", "ci.upper") %in% names(pe)))
+  expect_true("se" %in% names(ss))
+  expect_false("se" %in% names(lavaan::parameterEstimates(fit)))
+  expect_false("se" %in% names(lavaan::standardizedSolution(fit)))
+  expect_equal(pe, lavaan::parameterEstimates(fit, se = TRUE))
+  expect_equal(ss, lavaan::standardizedSolution(fit, se = TRUE))
+  expect_false("se" %in% names(svysem::parameterEstimates(fit, se = FALSE)))
 
-  pe <- parameterEstimates(fit, se = TRUE)
   names_pe <- paste0(pe$lhs, pe$op, pe$rhs)
   free <- names(coef(fit))
   got <- pe$se[match(free, names_pe)]
   want <- sqrt(diag(vcov(fit)))[free]
   expect_false(anyNA(got))
   expect_rel_equal(got, want, 1e-8)
-  expect_true(all(is.finite(standardizedSolution(fit, se = TRUE)$se)))
+  expect_true(all(is.finite(ss$se)))
 })
 
 test_that("lavTestWald is finite and a defined mean difference matches the delta method", {

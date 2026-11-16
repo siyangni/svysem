@@ -11,12 +11,12 @@
 #'
 #' The returned object extends lavaan, so [coef()], [vcov()],
 #' [lavaan::lavTestWald()] and [lavaan::fitMeasures()] report design-based
-#' results. [lavaan::parameterEstimates()] and
-#' [lavaan::standardizedSolution()] omit standard errors unless `se = TRUE`,
-#' because the object's class is `svysem` rather than `lavaan`. `se = TRUE`
-#' returns the design-based standard errors, matching `sqrt(diag(vcov()))`.
-#' [summary()] and the printed display add the design degrees of freedom and
-#' the estimator.
+#' results. [parameterEstimates()][parameterEstimates] and
+#' [standardizedSolution()][standardizedSolution] include the
+#' design-based standard errors and confidence intervals. lavaan's own
+#' functions omit those columns unless `se = TRUE`, because the object's
+#' class is `svysem` rather than `lavaan`. [summary()] and the printed
+#' display add the design degrees of freedom and the estimator.
 #'
 #' `"MLM"` is maximum likelihood with a Satorra-Bentler adjustment for
 #' complete continuous data. `missing = "ml"` is an error and names MLR as the

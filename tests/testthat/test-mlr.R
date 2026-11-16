@@ -207,7 +207,13 @@ test_that("the MLR covariance is the hand-built sandwich and numerical scores ma
     colnames(numerical) <- colnames(analytic)
   }
   weights <- svysem:::svysem_lavaan_weight_vector(fit, nrow(data))
-  expect_equal(numerical, analytic * weights, tolerance = 1e-6)
+  # lavaan 0.7 already returns weight * score. Earlier versions do not.
+  expected <- if (isTRUE(svysem:::svysem_lavscores_weighted())) {
+    analytic
+  } else {
+    analytic * weights
+  }
+  expect_equal(numerical, expected, tolerance = 1e-6)
 })
 
 test_that("unstable FIML scores are an error and do not fall back to complete cases", {
