@@ -9,12 +9,12 @@ expect_svysem_error <- function(expr, class) {
 test_that("an unimplemented estimator is a classed error", {
   design <- simulate_design(n_psu = 4, n_per = 4, n_strata = 2, seed = 1)
   expect_svysem_error(
-    svysem("y ~ x1", design, estimator = "WLSMV"),
+    svysem("y ~ x1", design, estimator = "PML"),
     "svysem_error_estimator"
   )
-  expect_snapshot(error = TRUE, svysem("y ~ x1", design, estimator = "WLSMV"))
+  expect_snapshot(error = TRUE, svysem("y ~ x1", design, estimator = "PML"))
   expect_svysem_error(
-    svycfa("f =~ y1 + y2 + y3", design, estimator = "MLR"),
+    svycfa("f =~ y1 + y2 + y3", design, estimator = "PML"),
     "svysem_error_estimator"
   )
 })
@@ -94,10 +94,13 @@ test_that("ordered indicators are refused", {
 test_that("a group= argument is refused", {
   design <- simulate_design(n_psu = 4, n_per = 4, n_strata = 2, seed = 1)
   expect_svysem_error(
-    svysem("y ~ x1", design, group = "strat"),
+    svysem("y ~ x1", design, estimator = "MLR", group = "strat"),
     "svysem_error_data"
   )
-  expect_snapshot(error = TRUE, svysem("y ~ x1", design, group = "strat"))
+  expect_snapshot(
+    error = TRUE,
+    svysem("y ~ x1", design, estimator = "MLR", group = "strat")
+  )
 })
 
 test_that("a cluster= argument is refused", {

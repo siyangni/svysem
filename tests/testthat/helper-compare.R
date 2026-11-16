@@ -31,6 +31,18 @@ regression_parts <- function(fit) {
   )
 }
 
+expect_rel <- function(got, expected, tolerance = 1e-6) {
+  if (is.null(dim(got)) && is.null(dim(expected)) &&
+        !is.null(names(got)) && !is.null(names(expected))) {
+    got <- got[names(expected)]
+  }
+  got <- as.numeric(got)
+  expected <- as.numeric(expected)
+  expect_identical(length(got), length(expected))
+  scale <- pmax(abs(got), abs(expected), 1e-8)
+  expect_lte(max(abs(got - expected) / scale), tolerance)
+}
+
 glm_parts <- function(design) {
   fitted <- survey::svyglm(y ~ x1 + x2, design = design)
   list(

@@ -1,0 +1,58 @@
+---
+title: "Multiply imputed survey data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Multiply imputed survey data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+Each completed data set is fitted on its own design. The fits are pooled with Rubin's rules. The design degrees of freedom are the complete-data degrees of freedom.
+
+```{r, include = FALSE}
+if (!requireNamespace("mitools", quietly = TRUE)) knitr::knit_exit()
+```
+
+```{r setup}
+library(svysem)
+base <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = 2)$variables
+second <- base
+second$y1 <- second$y1 + 0.15
+second$y3 <- second$y3 - 0.10
+design <- survey::svydesign(
+  ids = ~psu, strata = ~strat, weights = ~w,
+  data = mitools::imputationList(list(base, second))
+)
+```
+
+The model labels a residual covariance and defines its Fisher *z* with `atanh()`. That defined parameter is pooled on the *z* scale.
+
+```{r fit}
+model <- "
+  f =~ y1 + y2 + y3 + y4
+  y1 ~~ v1*y1
+  y2 ~~ v2*y2
+  y1 ~~ c*y2
+  z := atanh(c / sqrt(v1 * v2))
+"
+fit <- svycfa(model, design)
+coef(fit)
+```
+
+`pooled_estimates()` reports the Rubin estimate, its standard error, and the Barnard-Rubin degrees of freedom. `standardized = TRUE` pools correlations on the Fisher *z* scale and transforms them back. `pooled_wald()` takes the same constraints as `lavaan::lavTestWald()`. `fitMeasures()` pools the scaled chi-square and summarizes the robust indices by their mean, minimum, and maximum. Those indices are not pooled with Rubin's rules.
+
+```{r pool}
+head(pooled_estimates(fit), 3)
+pooled_wald(fit, "z == 0")
+fitMeasures(fit, c("chisq.scaled", "cfi.robust.mean", "cfi.robust.min", "cfi.robust.max"))
+```
+
+The status table has one row per imputation. `on_fail = "omit"` drops a failed imputation and records the message, as long as two fits remain. The default is `"stop"`.
+
+```{r status}
+fit@status
+```

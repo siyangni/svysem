@@ -142,16 +142,16 @@ test_that("completed designs must share degrees of freedom", {
   expect_error(svysem("y ~ x", des), class = "svysem_error_design")
 })
 
-test_that("estimators other than MLM are rejected", {
+test_that("an unknown estimator is rejected for a svyimputationList", {
   skip_if_not_installed("mitools")
   des <- mi_design(n_imp = 2)
   err <- expect_error(
-    svysem("y ~ x", des, estimator = "WLSMV"),
+    svysem("y ~ x", des, estimator = "PML"),
     class = "svysem_error_estimator"
   )
   expect_s3_class(err, "svysem_error")
   expect_error(
-    svycfa("y ~ x", des, estimator = "MLR"),
+    svycfa("y ~ x", des, estimator = "PML"),
     class = "svysem_error_estimator"
   )
 })

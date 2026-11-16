@@ -1,0 +1,5 @@
+url: https://siyangni.github.io/svysem
+template:
+  bootstrap: 5
+development:
+  mode: auto

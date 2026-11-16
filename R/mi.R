@@ -22,7 +22,7 @@
 #' @slot status One row per imputation, including failures. Columns are
 #'   `no.conv`, `no.se`, `no.npd` and `message` (an empty string when the
 #'   imputation did not error).
-#' @slot estimator Estimator name. Only `"MLM"` is accepted.
+#' @slot estimator Estimator name. `"MLM"`, `"WLSMV"`, or `"MLR"`.
 #' @slot svysem_call The call that created the object.
 #' @return An object of class `svysem_mi`. [coef()] returns the pooled point
 #'   estimates, [vcov()] their total covariance, and [summary()] an object of
@@ -119,18 +119,10 @@ svysem_blank_status <- function(m) {
 }
 
 svysem_impute <- function(model, design, estimator, on_fail, parallel, fitter,
-                          svysem_call, ...) {
-  estimator <- match.arg(estimator, c("MLM", "WLSMV", "MLR"))
+                          svysem_call, replicates = NULL, replicate.type = NULL,
+                          ...) {
+  estimator <- svysem_check_estimator(estimator)
   on_fail <- match.arg(on_fail, c("stop", "omit"))
-  if (!identical(estimator, "MLM")) {
-    svysem_stop(
-      sprintf(
-        "Estimator \"%s\" is not implemented. Only \"MLM\" is available.",
-        estimator
-      ),
-      "svysem_error_estimator"
-    )
-  }
   if (!inherits(design, "svyimputationList") || !is.list(design$designs)) {
     svysem_stop(
       "design must be a svyimputationList with a list of completed designs.",
@@ -168,7 +160,9 @@ svysem_impute <- function(model, design, estimator, on_fail, parallel, fitter,
     tryCatch(
       {
         fit <- fitter(
-          model = model, design = designs[[i]], estimator = estimator, ...
+          model = model, design = designs[[i]], estimator = estimator,
+          replicates = replicates, replicate.type = replicate.type,
+          parallel = NULL, ...
         )
         list(ok = TRUE, fit = fit, status = svysem_fit_status(fit))
       },
@@ -241,15 +235,19 @@ svysem_impute <- function(model, design, estimator, on_fail, parallel, fitter,
 #' [svysem()], [svycfa()] and [svygrowth()] dispatch on a
 #' `svyimputationList`. Every completed design is passed to the same generic,
 #' which selects [lavaan::sem()], [lavaan::cfa()] or [lavaan::growth()].
-#' Only `estimator = "MLM"` is accepted. `parallel` is any function of
-#' `(X, FUN)` with the same contract as [lapply()]; `NULL` uses [lapply()].
-#' Tests and examples use at most two cores.
+#' `estimator` may be `"MLM"`, `"WLSMV"`, or `"MLR"`. `parallel` is any
+#' function of `(X, FUN)` with the same contract as [lapply()]; `NULL` uses
+#' [lapply()]. It loops imputations. Replicate weights inside one WLSMV fit
+#' stay sequential, so the two loops are not nested. Tests and examples use
+#' at most two cores.
 #'
 #' @param model Model syntax, as for [lavaan::sem()], [lavaan::cfa()] or
 #'   [lavaan::growth()].
 #' @param design A `svyimputationList`, from
 #'   `svydesign(data = mitools::imputationList(...))`.
-#' @param estimator Variance estimator. `"MLM"` is the only implemented value.
+#' @param estimator Variance estimator. `"MLM"`, `"WLSMV"`, or `"MLR"`.
+#' @param replicates,replicate.type Passed to each completed design. See
+#'   [svysem()]. Replicate weights inside an imputation are not parallelized.
 #' @param ... Passed to the fitter for each completed design.
 #' @param on_fail `"stop"` (default) or `"omit"`. `"omit"` drops a failed
 #'   imputation, records it in the status table, and continues.
@@ -285,39 +283,48 @@ svysem_impute <- function(model, design, estimator, on_fail, parallel, fitter,
 #' }
 #' @export
 svysem.svyimputationList <- function(model, design,
-                                      estimator = c("MLM", "WLSMV", "MLR"), ...,
-                                      on_fail = c("stop", "omit"),
-                                      parallel = NULL) {
+                                      estimator = c("MLM", "WLSMV", "MLR"),
+                                      replicates = NULL,
+                                      replicate.type = NULL,
+                                      parallel = NULL, ...,
+                                      on_fail = c("stop", "omit")) {
   svysem_impute(
     model = model, design = design, estimator = estimator,
     on_fail = on_fail, parallel = parallel, fitter = svysem,
-    svysem_call = match.call(), ...
+    svysem_call = match.call(),
+    replicates = replicates, replicate.type = replicate.type, ...
   )
 }
 
 #' @rdname svysem.svyimputationList
 #' @export
 svycfa.svyimputationList <- function(model, design,
-                                      estimator = c("MLM", "WLSMV", "MLR"), ...,
-                                      on_fail = c("stop", "omit"),
-                                      parallel = NULL) {
+                                      estimator = c("MLM", "WLSMV", "MLR"),
+                                      replicates = NULL,
+                                      replicate.type = NULL,
+                                      parallel = NULL, ...,
+                                      on_fail = c("stop", "omit")) {
   svysem_impute(
     model = model, design = design, estimator = estimator,
     on_fail = on_fail, parallel = parallel, fitter = svycfa,
-    svysem_call = match.call(), ...
+    svysem_call = match.call(),
+    replicates = replicates, replicate.type = replicate.type, ...
   )
 }
 
 #' @rdname svysem.svyimputationList
 #' @export
 svygrowth.svyimputationList <- function(model, design,
-                                         estimator = c("MLM", "WLSMV", "MLR"), ...,
-                                         on_fail = c("stop", "omit"),
-                                         parallel = NULL) {
+                                         estimator = c("MLM", "WLSMV", "MLR"),
+                                         replicates = NULL,
+                                         replicate.type = NULL,
+                                         parallel = NULL, ...,
+                                         on_fail = c("stop", "omit")) {
   svysem_impute(
     model = model, design = design, estimator = estimator,
     on_fail = on_fail, parallel = parallel, fitter = svygrowth,
-    svysem_call = match.call(), ...
+    svysem_call = match.call(),
+    replicates = replicates, replicate.type = replicate.type, ...
   )
 }
 

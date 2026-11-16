@@ -1,0 +1,10 @@
+citHeader("To cite svysem in publications use:")
+
+bibentry(
+  bibtype = "Manual",
+  title = "svysem: Design-Based Structural Equation Models for Complex Surveys",
+  author = person("Siyang", "Ni", email = "johnni.nj@gmail.com"),
+  year = "2026",
+  note = "R package version 0.3.0",
+  url = "https://github.com/siyangni/svysem"
+)

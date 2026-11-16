@@ -1,0 +1,85 @@
+---
+title: "Design-based SEM with svysem"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Design-based SEM with svysem}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+A design-based structural equation model takes a lavaan model and a survey design. Sampling weights, strata, and primary sampling units enter the variance. The point estimates are the weighted estimates.
+
+```{r setup}
+library(svysem)
+design <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = 1)
+```
+
+## Estimators
+
+`estimator = "MLM"` is maximum likelihood with a Satorra-Bentler adjustment. It is for complete continuous data. A regression with a mean structure and free covariates matches the design used by `survey::svyglm()`.
+
+```{r mlm}
+regression <- svysem(
+  "y ~ x1 + x2", design,
+  fixed.x = FALSE, meanstructure = TRUE
+)
+coef(regression)
+```
+
+`estimator = "MLR"` is robust maximum likelihood with a Yuan-Bentler adjustment. `missing = "ml"` scores each row on the indicators that row observed. The sampling weight of an incomplete row stays in the design.
+
+```{r mlr}
+incomplete <- design
+incomplete$variables$y2[c(1, 8, 15)] <- NA
+mlr <- svycfa(
+  "f =~ y1 + y2 + y3 + y4", incomplete,
+  estimator = "MLR", missing = "ml"
+)
+mlr@estimator
+lavaan::lavInspect(mlr, "nobs")
+```
+
+`estimator = "WLSMV"` is for ordered indicators. The point estimates use lavaan's weighted diagonally weighted least squares matrix. The standard errors use replicate weights. With strata, the default replicate type is a stratified jackknife.
+
+```{r wlsmv}
+frame <- design$variables
+frame$a <- ordered(findInterval(frame$y1, c(-0.5, 0.5)))
+frame$b <- ordered(findInterval(frame$y2, c(0)))
+frame$c <- ordered(findInterval(frame$y3, c(-0.4, 0.6)))
+ordinal <- survey::svydesign(
+  ids = ~psu, strata = ~strat, weights = ~w, data = frame
+)
+ordered_fit <- svycfa(
+  "f =~ a + b + c", ordinal,
+  estimator = "WLSMV", ordered = c("a", "b", "c")
+)
+ordered_fit@variance_method
+```
+
+## Domains and replicate-weight designs
+
+`subset()` keeps the primary sampling units of the full design, which is the variance for a domain. A design that already carries replicate weights is used as it stands. `variance_method` is then `"replication"` for every estimator.
+
+```{r domain}
+domain <- subset(design, strat == 1)
+domain_fit <- svysem(
+  "y ~ x1", domain, fixed.x = FALSE, meanstructure = TRUE
+)
+domain_fit@df
+
+replicated <- survey::as.svrepdesign(design, type = "auto")
+rep_fit <- svycfa("f =~ y1 + y2 + y3 + y4", replicated, estimator = "MLR")
+rep_fit@variance_method
+```
+
+## Factor scores
+
+`predict()` returns posterior means for continuous outcomes. `lavaan::lavPredict()` on a weighted fit returns a different number. Draws from the posterior, when requested, are plausible values for one completed data set.
+
+```{r scores}
+predict(mlr)[1, , drop = FALSE]
+```

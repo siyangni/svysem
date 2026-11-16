@@ -1,16 +1,19 @@
 #' Design-based SEM fit
 #'
 #' An object of class `svysem` is a [lavaan::lavaan-class] fit whose standard
-#' errors and scaled test use the survey design. [coef()], [vcov()],
+#' errors use the survey design. Where the estimator has a scaled test, that
+#' test uses the design too. [coef()], [vcov()],
 #' [lavaan::parameterEstimates()], [lavaan::standardizedSolution()],
 #' [lavaan::lavTestWald()] and [lavaan::fitMeasures()] therefore report
 #' design-based results with no further step.
 #'
 #' @slot df Design degrees of freedom, [survey::degf()] of the design passed
 #'   to [svysem()], [svycfa()] or [svygrowth()].
-#' @slot estimator Estimator used for the variance. `"MLM"` in this version.
-#' @slot variance_method How the variance was estimated. `"linearization"`
-#'   for a `survey.design` or `survey.design2`.
+#' @slot estimator Estimator used for the variance. `"MLM"`, `"WLSMV"`, or
+#'   `"MLR"`.
+#' @slot variance_method How the variance was estimated. `"linearization"` for
+#'   single-group MLM or for MLR on a `survey.design`, and `"replication"` for
+#'   WLSMV, for MLM with `group=`, or for any estimator on a `svyrep.design`.
 #' @slot svysem_call The call to [svysem()], [svycfa()] or [svygrowth()].
 #' @return The class extends `lavaan`. See [svysem()] for the fitting functions.
 #' @references Oberski D (2014). "lavaan.survey: An R Package for Complex
@@ -41,12 +44,13 @@ setClass(
     if (length(object@df) != 1L || !is.finite(object@df)) {
       return("df must be a single finite design degrees of freedom.")
     }
-    if (length(object@estimator) != 1L || object@estimator != "MLM") {
-      return("estimator must be \"MLM\".")
+    if (length(object@estimator) != 1L ||
+          !object@estimator %in% c("MLM", "WLSMV", "MLR")) {
+      return("estimator must be \"MLM\", \"WLSMV\", or \"MLR\".")
     }
     if (length(object@variance_method) != 1L ||
-          object@variance_method != "linearization") {
-      return("variance_method must be \"linearization\".")
+          !object@variance_method %in% c("linearization", "replication")) {
+      return("variance_method must be \"linearization\" or \"replication\".")
     }
     if (!is.call(object@svysem_call)) {
       return("svysem_call must be a call.")
@@ -88,13 +92,14 @@ setMethod("vcov", "svysem", function(object, ...) {
   svysem_parent_method("vcov", object, ...)
 })
 
-svysem_new <- function(fit, design, svysem_call) {
+svysem_new <- function(fit, design, svysem_call, estimator = "MLM",
+                       variance_method = "linearization") {
   methods::new(
     "svysem",
     fit,
     df = as.numeric(survey::degf(design)),
-    estimator = "MLM",
-    variance_method = "linearization",
+    estimator = estimator,
+    variance_method = variance_method,
     svysem_call = svysem_call
   )
 }

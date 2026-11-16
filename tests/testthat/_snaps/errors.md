@@ -1,10 +1,10 @@
 # an unimplemented estimator is a classed error
 
     Code
-      svysem("y ~ x1", design, estimator = "WLSMV")
+      svysem("y ~ x1", design, estimator = "PML")
     Condition
       Error:
-      ! estimator "WLSMV" is not implemented. Only "MLM" is available.
+      ! estimator "PML" is not implemented. Available estimators are "MLM", "WLSMV" and "MLR".
 
 # missing = ml names MLR and is refused for MLM
 
@@ -49,10 +49,10 @@
 # a group= argument is refused
 
     Code
-      svysem("y ~ x1", design, group = "strat")
+      svysem("y ~ x1", design, estimator = "MLR", group = "strat")
     Condition
       Error:
-      ! A group= argument is not supported. MLM fits a single group. Stratification comes from the design.
+      ! A group= argument is not supported. MLR fits a single group. Stratification comes from the design.
 
 # a cluster= argument is refused
 
@@ -68,7 +68,7 @@
       svysem("y ~ x1", design, ngroups = 2)
     Condition
       Error:
-      ! Multiple groups are not supported for MLM.
+      ! ngroups= is not supported. Name the groups with group=.
 
 # missing other than listwise is refused
 

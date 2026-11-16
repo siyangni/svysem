@@ -6,58 +6,203 @@
 \alias{svygrowth}
 \alias{svysem.survey.design2}
 \alias{svysem.survey.design}
+\alias{svysem.svyrep.design}
 \alias{svysem.default}
 \alias{svycfa.survey.design2}
 \alias{svycfa.survey.design}
+\alias{svycfa.svyrep.design}
 \alias{svycfa.default}
 \alias{svygrowth.survey.design2}
 \alias{svygrowth.survey.design}
+\alias{svygrowth.svyrep.design}
 \alias{svygrowth.default}
 \title{Design-based structural equation models.}
 \usage{
-svysem(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+svysem(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-svycfa(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+svycfa(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-svygrowth(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+svygrowth(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svysem}{survey.design2}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svysem}{survey.design2}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svysem}{survey.design}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svysem}{survey.design}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svysem}{default}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svysem}{svyrep.design}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svycfa}{survey.design2}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svysem}{default}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svycfa}{survey.design}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svycfa}{survey.design2}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svycfa}{default}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svycfa}{survey.design}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svygrowth}{survey.design2}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svycfa}{svyrep.design}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svygrowth}{survey.design}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svycfa}{default}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 
-\method{svygrowth}{default}(model, design, estimator = c("MLM", "WLSMV", "MLR"), ...)
+\method{svygrowth}{survey.design2}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
+
+\method{svygrowth}{survey.design}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
+
+\method{svygrowth}{svyrep.design}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
+
+\method{svygrowth}{default}(
+  model,
+  design,
+  estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{Model syntax, as for \code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[lavaan:cfa]{lavaan::cfa()}} or
 \code{\link[lavaan:growth]{lavaan::growth()}}.}
 
-\item{design}{A \code{survey.design} or \code{survey.design2} object, including the
-result of \code{\link[=subset]{subset()}}. A \code{svyrep.design} is not supported yet and signals
-\code{svysem_error_design}.}
+\item{design}{A \code{survey.design}, \code{survey.design2}, or \code{svyrep.design}
+object, including the result of \code{\link[=subset]{subset()}} or \code{\link[survey:as.svrepdesign]{survey::as.svrepdesign()}}.}
 
-\item{estimator}{Variance estimator. Only \code{"MLM"} is implemented. \code{"WLSMV"}
-and \code{"MLR"} are reserved and raise \code{svysem_error_estimator}.}
+\item{estimator}{Variance estimator. \code{"MLM"} (Satorra-Bentler for one
+group, replicate weights when \verb{group=} is set; complete continuous data),
+\code{"WLSMV"} (ordinal weighted least squares with replicate-weight standard
+errors), or \code{"MLR"} (Yuan-Bentler, including \code{missing = "ml"}).}
+
+\item{replicates}{Number of bootstrap replicate weights. Used when
+\code{replicate.type = "bootstrap"} for WLSMV or for MLM with \verb{group=}.
+Jackknife and BRR counts are fixed by the primary sampling units.}
+
+\item{replicate.type}{How \code{\link[survey:as.svrepdesign]{survey::as.svrepdesign()}} builds weights for
+WLSMV and for MLM with \verb{group=}. One of \code{"auto"}, \code{"JK1"}, \code{"JKn"},
+\code{"BRR"}, or \code{"bootstrap"}. \code{NULL} is \code{"auto"}.}
+
+\item{parallel}{\code{NULL}, or a function of \verb{(X, FUN)} with the same contract
+as \code{\link[=lapply]{lapply()}}, used to loop WLSMV replicates and multigroup MLM
+replicates. On a \code{svyimputationList}, \code{parallel} loops imputations
+instead, and the replicates inside each imputation stay sequential.}
 
 \item{...}{Passed to \code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[lavaan:cfa]{lavaan::cfa()}} or \code{\link[lavaan:growth]{lavaan::growth()}}.
-\code{data}, \code{sampling.weights}, sample moments and \code{NACOV} are taken from the
-design. \code{ov.order} is set internally so Gamma matches the model.}
+\code{data}, \code{sampling.weights}, sample moments, \code{NACOV}, and \code{WLS.V} are
+taken from the design. \code{ov.order} is set internally so Gamma matches the
+model.}
 }
 \value{
 An S4 object of class \code{svysem} that contains the lavaan fit. Slots
-are \code{df} (design degrees of freedom), \code{estimator} (\code{"MLM"}),
-\code{variance_method} (\code{"linearization"}) and \code{svysem_call}.
+are \code{df} (design degrees of freedom), \code{estimator} (\code{"MLM"}, \code{"WLSMV"},
+or \code{"MLR"}), \code{variance_method} (\code{"linearization"} or \code{"replication"})
+and \code{svysem_call}.
 }
 \description{
 \code{svysem()}, \code{svycfa()} and \code{svygrowth()} fit a lavaan model to a
@@ -79,12 +224,13 @@ returns the design-based standard errors, matching \code{sqrt(diag(vcov()))}.
 \code{\link[=summary]{summary()}} and the printed display add the design degrees of freedom and
 the estimator.
 
-MLM uses complete data. \code{missing = "ml"} is an error and names MLR as the
-estimator that will handle it. Rows that are incomplete on the model
-variables are not dropped: their sampling weight is set to 0 inside the
-design used for Gamma, which is how \code{\link[=subset]{subset()}} represents a domain, and the
-primary sampling unit structure is kept. Zero weights are legal. A negative
-weight, or a design with no positive weight, is an error.
+\code{"MLM"} is maximum likelihood with a Satorra-Bentler adjustment for
+complete continuous data. \code{missing = "ml"} is an error and names MLR as the
+estimator that handles it. Rows that are incomplete on the model variables
+are not dropped: their sampling weight is set to 0 inside the design used
+for Gamma, which is how \code{\link[=subset]{subset()}} represents a domain, and the primary
+sampling unit structure is kept. Zero weights are legal. A negative weight,
+or a design with no positive weight, is an error.
 
 lavaan's default \code{sampling.weights.normalization = "total"} rescales
 weights so that they sum to the number of rows. Means and covariances of
@@ -100,13 +246,43 @@ that receives \code{NACOV}). Without that argument lavaan reorders variables to
 the data order and pairs Gamma with the wrong columns. \code{fixed.x = TRUE},
 the default for \code{\link[lavaan:sem]{lavaan::sem()}}, is supported when those columns are the
 observed second moments, plus the means when a mean structure is estimated.
-\code{conditional.x = TRUE} is not. One group of continuous variables only.
-Clustering is taken from the design; do not pass \verb{cluster=}, which would
-double-count primary sampling units. \code{survey.lonely.psu} is read by
-\code{\link[survey:svymean]{survey::svymean()}} and is never set here. Replicate-weight designs
-(\code{svyrep.design}, including the result of \code{\link[survey:as.svrepdesign]{survey::as.svrepdesign()}}) are
-not supported yet: the fit signals \code{svysem_error_design} and the message
-says that this design is not supported yet.
+\code{conditional.x = TRUE} is not supported for MLM or MLR. MLR fits one group
+of continuous variables. Single-group MLM does too, by linearization.
+\verb{group=} on MLM refits the weighted model on replicate weights, because
+lavaan keeps one \code{NACOV} per group and that drops the covariance between
+groups. The multigroup chi-square is the maximum-likelihood statistic, not
+a Satorra-Bentler statistic. Clustering is taken from the design; do not
+pass \verb{cluster=}, which would double-count primary sampling units.
+\code{survey.lonely.psu} is read by \code{\link[survey:svymean]{survey::svymean()}} and is never set here.
+
+\code{"MLR"} is robust maximum likelihood with a Yuan-Bentler adjustment. The
+variance is a sandwich: lavaan's observed information, and a meat from the
+design variance of the casewise scores (\code{\link[survey:svytotal]{survey::svytotal()}}).
+\code{missing = "ml"} scores the observed indicators; it does not fall back to
+complete cases. On a \code{survey.design} the variance method is linearization.
+On a \code{svyrep.design} it is replication, because \code{\link[survey:svytotal]{survey::svytotal()}} uses
+the replicate weights.
+
+\code{"WLSMV"} is lavaan's weighted least squares with the diagonally weighted
+least squares matrix taken from the weighted sample. Point estimates match
+that weighted fit. Standard errors and the scaled test use the
+replicate-weight covariance of lavaan's sample statistics (thresholds,
+continuous means and variances, and correlations), with the scale from
+\code{\link[survey:as.svrepdesign]{survey::as.svrepdesign()}} and \code{\link[survey:svrVar]{survey::svrVar()}}. \code{replicate.type = "auto"}
+is a stratified jackknife when the design has strata and JK1 otherwise.
+\code{replicates} is only the bootstrap count. Ordered indicators, \verb{group=}, and
+\code{missing = "pairwise"} or \code{"listwise"} are accepted. lavaan stores one
+\code{NACOV} per group, so the covariance of sample statistics between groups is
+not passed on. The weight matrix Mplus uses for \code{TYPE = COMPLEX} has not
+been compared with lavaan's. For WLSMV, MLR, and multigroup MLM, \code{se} and
+\code{test} are set by the design and are not taken from \code{...}.
+
+A \code{svyrep.design} is accepted for every estimator. \code{variance_method} is
+then \code{"replication"}. \code{replicates} and \code{replicate.type} are an error on a
+design that already has replicate weights.
+
+\code{\link[=predict]{predict()}} returns factor scores for continuous outcomes. See
+\code{\link[=predict.svysem]{predict.svysem()}}.
 }
 \examples{
 design <- simulate_design(n_psu = 6, n_per = 4, n_strata = 2, seed = 1)
@@ -126,13 +302,20 @@ growth_fit <- svygrowth(
 )
 coef(cfa_fit)
 coef(growth_fit)
+predict(cfa_fit)[1, , drop = FALSE]
+mlr_fit <- svycfa("f =~ y1 + y2 + y3 + y4", design, estimator = "MLR")
+coef(mlr_fit)
 }
 \references{
-Oberski D (2014). "lavaan.survey: An R Package for Complex
-Survey Analysis of Structural Equation Models." Journal of Statistical
-Software, 57(1), 1--27. \doi{10.18637/jss.v057.i01}
+Oberski D (2014). "lavaan.survey: An R Package for Complex Survey Analysis
+of Structural Equation Models." Journal of Statistical Software, 57(1),
+1--27. \doi{10.18637/jss.v057.i01}
+
+Yuan KH, Bentler PM (2000). "Three Likelihood-Based Methods for Mean and
+Covariance Structure Analysis with Nonnormal Missing Data." Sociological
+Methodology, 30(1), 165--200. \doi{10.1111/0081-1750.00078}
 }
 \seealso{
-\link[=svysem-class]{svysem}, \code{\link[=simulate_design]{simulate_design()}}, \code{\link[lavaan:sem]{lavaan::sem()}},
-\code{\link[survey:svydesign]{survey::svydesign()}}, \code{\link[survey:svyglm]{survey::svyglm()}}
+\link[=svysem-class]{svysem}, \code{\link[=predict.svysem]{predict.svysem()}}, \code{\link[=simulate_design]{simulate_design()}},
+\code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[survey:svydesign]{survey::svydesign()}}, \code{\link[survey:svyglm]{survey::svyglm()}}
 }

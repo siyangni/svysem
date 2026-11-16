@@ -38,7 +38,8 @@ The class extends \code{lavaan}. See \code{\link[=svysem]{svysem()}} for the fit
 }
 \description{
 An object of class \code{svysem} is a \link[lavaan:lavaan-class]{lavaan::lavaan} fit whose standard
-errors and scaled test use the survey design. \code{\link[=coef]{coef()}}, \code{\link[=vcov]{vcov()}},
+errors use the survey design. Where the estimator has a scaled test, that
+test uses the design too. \code{\link[=coef]{coef()}}, \code{\link[=vcov]{vcov()}},
 \code{\link[lavaan:parameterEstimates]{lavaan::parameterEstimates()}}, \code{\link[lavaan:standardizedSolution]{lavaan::standardizedSolution()}},
 \code{\link[lavaan:lavTestWald]{lavaan::lavTestWald()}} and \code{\link[lavaan:fitMeasures]{lavaan::fitMeasures()}} therefore report
 design-based results with no further step.
@@ -49,10 +50,12 @@ design-based results with no further step.
 \item{\code{df}}{Design degrees of freedom, \code{\link[survey:degf]{survey::degf()}} of the design passed
 to \code{\link[=svysem]{svysem()}}, \code{\link[=svycfa]{svycfa()}} or \code{\link[=svygrowth]{svygrowth()}}.}
 
-\item{\code{estimator}}{Estimator used for the variance. \code{"MLM"} in this version.}
+\item{\code{estimator}}{Estimator used for the variance. \code{"MLM"}, \code{"WLSMV"}, or
+\code{"MLR"}.}
 
-\item{\code{variance_method}}{How the variance was estimated. \code{"linearization"}
-for a \code{survey.design} or \code{survey.design2}.}
+\item{\code{variance_method}}{How the variance was estimated. \code{"linearization"} for
+single-group MLM or for MLR on a \code{survey.design}, and \code{"replication"} for
+WLSMV, for MLM with \verb{group=}, or for any estimator on a \code{svyrep.design}.}
 
 \item{\code{svysem_call}}{The call to \code{\link[=svysem]{svysem()}}, \code{\link[=svycfa]{svycfa()}} or \code{\link[=svygrowth]{svygrowth()}}.}
 }}

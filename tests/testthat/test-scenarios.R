@@ -415,7 +415,17 @@ test_that("dropping survey.design2 makes survey fail, so the design method is ca
   expect_identical(class(old), "survey.design")
   survey_err <- tryCatch(suppressWarnings(svymean(~y, old)), error = function(e) e)
   expect_s3_class(survey_err, "error")
-  expect_identical(svysem.survey.design, svysem.survey.design2)
+  # covr inserts a counter whose source location differs between the two
+  # copies. The implementations are the same apart from that counter.
+  implementation <- function(fn) {
+    text <- deparse(body(fn))
+    text[!grepl("covr_count", text, fixed = TRUE)]
+  }
+  expect_identical(
+    implementation(svysem.survey.design),
+    implementation(svysem.survey.design2)
+  )
+  expect_identical(formals(svysem.survey.design), formals(svysem.survey.design2))
   fit <- suppressWarnings(svysem.survey.design(
     "y ~ x1", design,
     fixed.x = FALSE, meanstructure = TRUE
@@ -426,25 +436,50 @@ test_that("dropping survey.design2 makes survey fail, so the design method is ca
   )
   expect_s4_class(fit, "svysem")
   expect_rel_equal(coef(fit), coef(direct), 1e-8)
+
+  cfa_model <- "f =~ y1 + y2 + y3 + y4"
+  growth_model <- paste(
+    "i =~ 1*y1 + 1*y2 + 1*y3 + 1*y4",
+    "s =~ 0*y1 + 1*y2 + 2*y3 + 3*y4",
+    sep = "\n"
+  )
+  expect_rel_equal(
+    coef(suppressWarnings(svycfa.survey.design(cfa_model, design))),
+    coef(svycfa(cfa_model, design)),
+    1e-8
+  )
+  expect_rel_equal(
+    coef(suppressWarnings(svygrowth.survey.design(growth_model, design))),
+    coef(svygrowth(growth_model, design)),
+    1e-8
+  )
 })
 
-test_that("replicate designs, non-designs, and reserved estimators are classed errors", {
+test_that("a replicate-weight design uses replication, and a non-design is refused", {
   design <- cluster_design(19)
   replicate <- as.svrepdesign(design)
-  err <- expect_classed(svysem("y ~ x1", replicate), "svysem_error_design")
-  expect_match(conditionMessage(err), "this design is not supported yet", fixed = TRUE)
+  fit <- svysem("y ~ x1", replicate, fixed.x = FALSE, meanstructure = TRUE)
+  expect_s4_class(fit, "svysem")
+  expect_identical(fit@estimator, "MLM")
+  expect_identical(fit@variance_method, "replication")
+  direct <- svysem("y ~ x1", design, fixed.x = FALSE, meanstructure = TRUE)
+  expect_rel_equal(coef(fit), coef(direct), 1e-6)
+  expect_true(all(is.finite(sqrt(diag(vcov(fit))))))
 
   expect_classed(
     svysem("y ~ x1", data.frame(y = 1, x1 = 1)),
     "svysem_error_design"
   )
-  expect_classed(svysem("y ~ x1", design, estimator = "WLSMV"), "svysem_error_estimator")
-  expect_classed(svysem("y ~ x1", design, estimator = "MLR"), "svysem_error_estimator")
+  expect_classed(svysem("y ~ x1", design, estimator = "PML"), "svysem_error_estimator")
   missing_err <- expect_classed(
     svysem("y ~ x1", design, missing = "ml"),
     "svysem_error_missing"
   )
   expect_match(conditionMessage(missing_err), "MLR", fixed = TRUE)
+  expect_classed(
+    svysem("y ~ x1", replicate, replicate.type = "JK1"),
+    "svysem_error_design"
+  )
 })
 
 test_that("listwise missing rows stay in the design and the standard errors differ from dropping them", {
@@ -531,7 +566,10 @@ test_that("sampling.weights.normalization none and total give the same coefficie
 
 test_that("group, cluster, and ordered arguments are classed data errors", {
   design <- cluster_design(24)
-  expect_classed(svysem("y ~ x1", design, group = "strat"), "svysem_error_data")
+  expect_classed(
+    svysem("y ~ x1", design, estimator = "MLR", group = "strat"),
+    "svysem_error_data"
+  )
   expect_classed(svysem("y ~ x1", design, cluster = "psu"), "svysem_error_data")
   expect_classed(svysem("y ~ x1", design, ordered = "y"), "svysem_error_data")
 })
@@ -644,4 +682,99 @@ test_that("fitMeasures on an imputation fit returns finite scaled and robust ind
   )
   expect_true(all(needed %in% names(measures)))
   expect_true(all(is.finite(measures)))
+})
+
+test_that("a growth model on replicate weights uses the same estimates", {
+  design <- cluster_design(21)
+  replicate <- survey::as.svrepdesign(design)
+  growth_model <- paste(
+    "i =~ 1*y1 + 1*y2 + 1*y3 + 1*y4",
+    "s =~ 0*y1 + 1*y2 + 2*y3 + 3*y4",
+    sep = "\n"
+  )
+  fit <- svygrowth(growth_model, replicate)
+  direct <- svygrowth(growth_model, design)
+  expect_s4_class(fit, "svysem")
+  expect_identical(fit@variance_method, "replication")
+  expect_rel_equal(coef(fit), coef(direct), 1e-8)
+  expect_rel_equal(coef.svysem(fit), coef(fit), 1e-12)
+  expect_rel_equal(vcov.svysem(fit), vcov(fit), 1e-12)
+})
+
+test_that("simulate_design rejects bad sizes and can take a domain", {
+  expect_classed(simulate_design(n_psu = 0), "svysem_error_data")
+  expect_classed(
+    simulate_design(nest = TRUE, n_strata = 1, n_psu = 2, n_per = 3),
+    "svysem_error_data"
+  )
+  full <- simulate_design(
+    n_psu = 3, n_per = 4, n_strata = 2, nest = TRUE, seed = 1
+  )
+  domain <- simulate_design(
+    n_psu = 3, n_per = 4, n_strata = 2, nest = TRUE, domain = TRUE, seed = 1
+  )
+  expect_lt(nrow(domain$variables), nrow(full$variables))
+  expect_s3_class(domain, "survey.design")
+})
+
+test_that("rejected replicate, missing, group, and ordered arguments name the reason", {
+  design <- cluster_design(22)
+  expect_classed(
+    svycfa(
+      "f =~ y1 + y2 + y3 + y4", design,
+      estimator = "WLSMV", replicate.type = "Fay"
+    ),
+    "svysem_error_design"
+  )
+  expect_classed(
+    svycfa(
+      "f =~ y1 + y2 + y3 + y4", design,
+      estimator = "WLSMV", replicate.type = "bootstrap", replicates = 1
+    ),
+    "svysem_error_design"
+  )
+  expect_classed(
+    svycfa(
+      "f =~ y1 + y2 + y3 + y4", design,
+      estimator = "WLSMV", parallel = 1
+    ),
+    "svysem_error_design"
+  )
+  expect_classed(svysem("y ~ x1", design, missing = 1), "svysem_error_data")
+  expect_classed(
+    svycfa(
+      "f =~ y1 + y2 + y3 + y4", design,
+      estimator = "WLSMV", missing = "two.stage"
+    ),
+    "svysem_error_data"
+  )
+  expect_classed(
+    svycfa("f =~ y1 + y2 + y3", design, estimator = "WLSMV", group = "nope"),
+    "svysem_error_variables"
+  )
+  expect_classed(
+    svycfa("f =~ y1 + y2 + y3", design, estimator = "MLR", ngroups = 2),
+    "svysem_error_data"
+  )
+
+  ordered_design <- design
+  ordered_design$variables$y1 <- ordered(ordered_design$variables$y1)
+  expect_classed(
+    svycfa("f =~ y1 + y2 + y3", ordered_design, estimator = "MLR"),
+    "svysem_error_data"
+  )
+
+  grouped <- design
+  grouped$variables$g <- rep(c("a", "b"), length.out = nrow(grouped$variables))
+  grouped$variables$y1 <- as.character(grouped$variables$y1)
+  expect_classed(svysem("y1 ~ x1", grouped, group = "g"), "svysem_error_data")
+
+  expect_s4_class(
+    svysem("y ~ x1", design, ordered = FALSE, fixed.x = FALSE),
+    "svysem"
+  )
+  expect_s4_class(
+    svysem("y ~ x1", design, ordered = character(0), fixed.x = FALSE),
+    "svysem"
+  )
 })

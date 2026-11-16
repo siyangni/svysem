@@ -97,7 +97,7 @@ first completed design.}
 \code{no.conv}, \code{no.se}, \code{no.npd} and \code{message} (an empty string when the
 imputation did not error).}
 
-\item{\code{estimator}}{Estimator name. Only \code{"MLM"} is accepted.}
+\item{\code{estimator}}{Estimator name. \code{"MLM"}, \code{"WLSMV"}, or \code{"MLR"}.}
 
 \item{\code{svysem_call}}{The call that created the object.}
 }}

@@ -8,3 +8,4 @@ SVYSEM_PLAN.md
 *.sha256
 svysem.Rcheck
 .DS_Store
+README.html

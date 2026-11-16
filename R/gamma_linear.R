@@ -135,14 +135,18 @@ svysem_nacov <- function(prelim, design) {
   svysem_single_nobs(prelim) * variance
 }
 
-svysem_lavaan_args <- function(model, data, weight, dots, nacov = NULL) {
+svysem_lavaan_args <- function(model, data, weight, dots, estimator = "MLM",
+                               nacov = NULL, wls_v = NULL, extra = NULL) {
   blocked <- c(
     "data", "sampling.weights", "estimator", "NACOV", "ov.order",
-    "sample.cov", "sample.mean", "sample.th", "sample.nobs"
+    "sample.cov", "sample.mean", "sample.th", "sample.nobs", "WLS.V"
   )
   forbidden <- intersect(
     names(dots),
-    c("data", "sampling.weights", "sample.cov", "sample.mean", "sample.nobs", "NACOV")
+    c(
+      "data", "sampling.weights", "sample.cov", "sample.mean", "sample.nobs",
+      "NACOV", "WLS.V"
+    )
   )
   if (length(forbidden)) {
     svysem_stop(
@@ -160,28 +164,43 @@ svysem_lavaan_args <- function(model, data, weight, dots, nacov = NULL) {
   args <- c(
     list(model = model, data = data),
     user,
-    list(sampling.weights = weight, estimator = "MLM")
+    list(sampling.weights = weight, estimator = estimator)
   )
   if (is.null(nacov)) {
     args$ov.order <- "model"
   } else {
     args$NACOV <- nacov
+    # lavaan turns ov.order "force.model" into "model" when NACOV is set,
+    # and otherwise reorders statistics to the data. A supplied NACOV is also
+    # the DWLS weight matrix unless WLS.V is passed alongside it.
     args$ov.order <- "force.model"
+  }
+  if (!is.null(wls_v)) {
+    args$WLS.V <- wls_v
+  }
+  if (!is.null(extra)) {
+    args <- args[!names(args) %in% names(extra)]
+    args <- c(args, extra)
   }
   args
 }
 
-svysem_analysis_frame <- function(design, ov) {
+svysem_analysis_frame <- function(design, ov, zero_incomplete = TRUE) {
   svysem_check_weights(design)
-  na_rows <- !stats::complete.cases(design$variables[, ov, drop = FALSE])
-  design <- svysem_zero_incomplete(design, na_rows)
+  # FIML keeps incomplete rows at their sampling weight. Listwise sets those
+  # weights to 0 and leaves the row in the design.
+  if (isTRUE(zero_incomplete)) {
+    na_rows <- !stats::complete.cases(design$variables[, ov, drop = FALSE])
+    design <- svysem_zero_incomplete(design, na_rows)
+  }
   weight <- svysem_weight_name(c(names(design$variables), ov))
   data <- data.frame(design$variables, check.names = FALSE, stringsAsFactors = FALSE)
   data[[weight]] <- as.numeric(weights(design, "sampling"))
   list(design = design, data = data, weight = weight)
 }
 
-svysem_fit_mlm <- function(model, design, fitter, dots) {
+svysem_fit_mlm <- function(model, design, fitter, dots, replicates = NULL,
+                           replicate.type = NULL, parallel = NULL) {
   ov <- svysem_observed_names(model)
   if (!length(ov)) {
     svysem_stop(
@@ -190,6 +209,11 @@ svysem_fit_mlm <- function(model, design, fitter, dots) {
     )
   }
   svysem_check_variables(ov, names(design$variables))
+  if (!is.null(dots$group)) {
+    return(svysem_fit_mlm_grouped(
+      model, design, fitter, dots, ov, replicates, replicate.type, parallel
+    ))
+  }
   model_cols <- design$variables[, ov, drop = FALSE]
   svysem_check_arguments(dots, model_cols)
   non_numeric <- ov[!vapply(model_cols, is.numeric, logical(1))]
@@ -215,12 +239,189 @@ svysem_fit_mlm <- function(model, design, fitter, dots) {
   list(fit = final, design = design)
 }
 
-svysem_fit_design <- function(model, design, fitter, svysem_call, estimator, dots) {
-  svysem_check_estimator(estimator)
-  svysem_check_missing(dots$missing)
-  if (!inherits(design, "survey.design")) {
+svysem_fit_design <- function(model, design, fitter, svysem_call, estimator, dots,
+                               replicates = NULL, replicate.type = NULL,
+                               parallel = NULL) {
+  estimator <- svysem_check_estimator(estimator)
+  svysem_check_missing(dots$missing, estimator)
+  if (!inherits(design, "survey.design") && !inherits(design, "svyrep.design")) {
     svysem_stop_design(design)
   }
-  fitted <- svysem_fit_mlm(model, design, fitter, dots)
-  svysem_new(fitted$fit, design, svysem_call)
+  grouped_mlm <- identical(estimator, "MLM") && !is.null(dots$group)
+  svysem_check_replicate_request(
+    estimator, design, replicates, replicate.type, parallel,
+    allow_replicates = grouped_mlm
+  )
+  # svymean and svytotal on a svyrep.design already return replicate variances.
+  # WLSMV builds that replicate design itself when the input does not have one.
+  # Multigroup MLM does too: lavaan cannot take the between-group block of NACOV.
+  replication <- inherits(design, "svyrep.design") ||
+    identical(estimator, "WLSMV") || grouped_mlm
+  variance_method <- if (replication) "replication" else "linearization"
+  fitted <- if (identical(estimator, "WLSMV")) {
+    svysem_fit_wlsmv(
+      model, design, fitter, dots, replicates, replicate.type, parallel
+    )
+  } else if (identical(estimator, "MLR")) {
+    svysem_fit_mlr(model, design, fitter, dots)
+  } else {
+    svysem_fit_mlm(
+      model, design, fitter, dots, replicates, replicate.type, parallel
+    )
+  }
+  svysem_new(
+    fitted$fit, design, svysem_call,
+    estimator = estimator, variance_method = variance_method
+  )
+}
+
+# Point estimates are weighted maximum likelihood. se = "standard" on the
+# full sample gives lavaan a covariance slot to overwrite. Replicates skip it.
+svysem_mlm_point <- function(fitter, model, data, weight, dots, standard_errors) {
+  args <- svysem_lavaan_args(model, data, weight, dots, estimator = "ML")
+  args$se <- if (isTRUE(standard_errors)) "standard" else "none"
+  args$test <- "standard"
+  do.call(fitter, args)
+}
+
+svysem_one_coef_replicate <- function(fitter, model, prepared, dots, weights, target) {
+  data_replicate <- prepared$data
+  data_replicate[[prepared$weight]] <- as.numeric(weights)
+  fit_replicate <- svysem_mlm_point(
+    fitter, model, data_replicate, prepared$weight, dots, FALSE
+  )
+  estimate <- lavaan::coef(fit_replicate)
+  converged <- isTRUE(all(lavaan::lavInspect(fit_replicate, "converged")))
+  if (!converged || !identical(names(estimate), names(target)) ||
+        any(!is.finite(estimate))) {
+    return(list(
+      ok = FALSE,
+      message = "the replicate did not return the full-sample coefficients"
+    ))
+  }
+  list(ok = TRUE, coef = estimate)
+}
+
+# lavaan stores one NACOV per group, so the covariance between groups is
+# dropped. Primary sampling units that contain both groups make a
+# between-group contrast miss that term. The coefficients are refit on each
+# replicate weight instead. The chi-square stays the maximum-likelihood
+# statistic: there is no Satorra-Bentler adjustment on this route.
+svysem_replicate_coefficients <- function(fitter, model, prepared, dots,
+                                          rep_design, parallel) {
+  full <- svysem_mlm_point(
+    fitter, model, prepared$data, prepared$weight, dots, TRUE
+  )
+  if (!isTRUE(all(lavaan::lavInspect(full, "converged")))) {
+    svysem_stop(
+      "The multigroup MLM model did not converge.",
+      "svysem_error_data"
+    )
+  }
+  target <- lavaan::coef(full)
+  replicated <- weights(rep_design, "analysis")
+  if (!is.matrix(replicated) || nrow(replicated) != nrow(prepared$data)) {
+    svysem_stop(
+      "Replicate weights could not be aligned with the analysis rows.",
+      "svysem_error_design"
+    )
+  }
+  loop <- svysem_resolve_parallel(parallel)
+  n_replicates <- ncol(replicated)
+  results <- loop(seq_len(n_replicates), function(replicate) {
+    tryCatch(
+      svysem_one_coef_replicate(
+        fitter, model, prepared, dots, replicated[, replicate], target
+      ),
+      error = function(e) list(ok = FALSE, message = conditionMessage(e))
+    )
+  })
+  if (length(results) != n_replicates) {
+    svysem_stop(
+      "parallel did not return one result per replicate.",
+      "svysem_error_design"
+    )
+  }
+  statistics <- matrix(NA_real_, n_replicates, length(target))
+  for (replicate in seq_len(n_replicates)) {
+    result <- results[[replicate]]
+    failed <- inherits(result, "try-error") || !is.list(result) || !isTRUE(result$ok)
+    if (failed) {
+      message <- if (is.list(result) && !is.null(result$message)) {
+        paste(result$message, collapse = " ")
+      } else {
+        "the replicate did not return coefficients"
+      }
+      svysem_stop(
+        sprintf("Replicate %d failed: %s", replicate, message),
+        "svysem_error_data"
+      )
+    }
+    statistics[replicate, ] <- result$coef[names(target)]
+  }
+  list(fit = full, statistics = statistics, coef = target)
+}
+
+svysem_coef_variance <- function(collected, rep_design) {
+  variance <- tryCatch(
+    survey::svrVar(
+      thetas = collected$statistics,
+      scale = rep_design$scale,
+      rscales = rep_design$rscales,
+      mse = isTRUE(rep_design$mse),
+      coef = collected$coef
+    ),
+    error = function(e) e
+  )
+  if (inherits(variance, "error")) {
+    svysem_stop(
+      paste0("Replicate variance failed: ", conditionMessage(variance)),
+      "svysem_error_data"
+    )
+  }
+  variance <- as.matrix(variance)
+  if (nrow(variance) != length(collected$coef) || any(!is.finite(variance))) {
+    svysem_stop(
+      "The replicate covariance of the coefficients is not finite.",
+      "svysem_error_data"
+    )
+  }
+  dimnames(variance) <- list(names(collected$coef), names(collected$coef))
+  free_names <- colnames(lavaan::lavInspect(collected$fit, "vcov"))
+  if (is.null(free_names) || !all(free_names %in% colnames(variance))) {
+    svysem_stop(
+      "Replicate coefficients do not match the free parameters.",
+      "svysem_error_data"
+    )
+  }
+  variance[free_names, free_names, drop = FALSE]
+}
+
+svysem_fit_mlm_grouped <- function(model, design, fitter, dots, ov, replicates,
+                                   replicate.type, parallel) {
+  svysem_check_group_column(dots$group, names(design$variables))
+  model_cols <- design$variables[, ov, drop = FALSE]
+  svysem_check_arguments(dots, model_cols, allow_group = TRUE)
+  non_numeric <- ov[!vapply(model_cols, is.numeric, logical(1))]
+  if (length(non_numeric)) {
+    svysem_stop(
+      paste0(
+        "Model variables must be numeric for MLM: ",
+        paste(non_numeric, collapse = ", "), "."
+      ),
+      "svysem_error_data"
+    )
+  }
+  dots$se <- NULL
+  dots$test <- NULL
+  prepared <- svysem_analysis_frame(design, ov)
+  rep_design <- svysem_make_replicates(prepared$design, replicates, replicate.type)
+  collected <- svysem_replicate_coefficients(
+    fitter, model, prepared, dots, rep_design, parallel
+  )
+  covariance <- svysem_coef_variance(collected, rep_design)
+  list(
+    fit = svysem_inject_covariance(collected$fit, covariance),
+    design = design
+  )
 }

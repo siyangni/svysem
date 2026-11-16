@@ -10,27 +10,33 @@
   model,
   design,
   estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
   ...,
-  on_fail = c("stop", "omit"),
-  parallel = NULL
+  on_fail = c("stop", "omit")
 )
 
 \method{svycfa}{svyimputationList}(
   model,
   design,
   estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
   ...,
-  on_fail = c("stop", "omit"),
-  parallel = NULL
+  on_fail = c("stop", "omit")
 )
 
 \method{svygrowth}{svyimputationList}(
   model,
   design,
   estimator = c("MLM", "WLSMV", "MLR"),
+  replicates = NULL,
+  replicate.type = NULL,
+  parallel = NULL,
   ...,
-  on_fail = c("stop", "omit"),
-  parallel = NULL
+  on_fail = c("stop", "omit")
 )
 }
 \arguments{
@@ -40,16 +46,19 @@
 \item{design}{A \code{svyimputationList}, from
 \code{svydesign(data = mitools::imputationList(...))}.}
 
-\item{estimator}{Variance estimator. \code{"MLM"} is the only implemented value.}
+\item{estimator}{Variance estimator. \code{"MLM"}, \code{"WLSMV"}, or \code{"MLR"}.}
+
+\item{replicates, replicate.type}{Passed to each completed design. See
+\code{\link[=svysem]{svysem()}}. Replicate weights inside an imputation are not parallelized.}
+
+\item{parallel}{\code{NULL} to use \code{\link[=lapply]{lapply()}}, or a function called as
+\code{parallel(X, FUN)}. One example is
+\code{function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)}.}
 
 \item{...}{Passed to the fitter for each completed design.}
 
 \item{on_fail}{\code{"stop"} (default) or \code{"omit"}. \code{"omit"} drops a failed
 imputation, records it in the status table, and continues.}
-
-\item{parallel}{\code{NULL} to use \code{\link[=lapply]{lapply()}}, or a function called as
-\code{parallel(X, FUN)}. One example is
-\code{function(X, FUN) parallel::mclapply(X, FUN, mc.cores = 2)}.}
 }
 \value{
 A \link[=svysem_mi-class]{svysem_mi} object. Its \code{df} slot is the design degrees
@@ -59,9 +68,11 @@ of freedom and is the default \code{df.com} for pooling.
 \code{\link[=svysem]{svysem()}}, \code{\link[=svycfa]{svycfa()}} and \code{\link[=svygrowth]{svygrowth()}} dispatch on a
 \code{svyimputationList}. Every completed design is passed to the same generic,
 which selects \code{\link[lavaan:sem]{lavaan::sem()}}, \code{\link[lavaan:cfa]{lavaan::cfa()}} or \code{\link[lavaan:growth]{lavaan::growth()}}.
-Only \code{estimator = "MLM"} is accepted. \code{parallel} is any function of
-\verb{(X, FUN)} with the same contract as \code{\link[=lapply]{lapply()}}; \code{NULL} uses \code{\link[=lapply]{lapply()}}.
-Tests and examples use at most two cores.
+\code{estimator} may be \code{"MLM"}, \code{"WLSMV"}, or \code{"MLR"}. \code{parallel} is any
+function of \verb{(X, FUN)} with the same contract as \code{\link[=lapply]{lapply()}}; \code{NULL} uses
+\code{\link[=lapply]{lapply()}}. It loops imputations. Replicate weights inside one WLSMV fit
+stay sequential, so the two loops are not nested. Tests and examples use
+at most two cores.
 }
 \examples{
 if (requireNamespace("mitools", quietly = TRUE)) {
