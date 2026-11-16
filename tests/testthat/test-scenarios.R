@@ -419,11 +419,12 @@ test_that("dropping survey.design2 makes survey fail, so the design method is ca
   expect_identical(class(old), "survey.design")
   survey_err <- tryCatch(suppressWarnings(svymean(~y, old)), error = function(e) e)
   expect_s3_class(survey_err, "error")
-  # covr inserts a counter whose source location differs between the two
-  # copies. The implementations are the same apart from that counter.
+  # covr inserts covr:::count() (older releases used covr_count) on its own
+  # line. The source location in that call differs between the two copies.
+  # The implementations are the same apart from that counter.
   implementation <- function(fn) {
     text <- deparse(body(fn))
-    text[!grepl("covr_count", text, fixed = TRUE)]
+    text[!grepl("covr:::", text, fixed = TRUE)]
   }
   expect_identical(
     implementation(svysem.survey.design),
