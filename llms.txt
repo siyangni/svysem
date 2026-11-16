@@ -1,0 +1,67 @@
+# svysem
+
+Design-based structural equation models for complex survey data. The
+model is fitted with [lavaan](https://lavaan.ugent.be/). Sampling
+weights, clustering and stratification come from a
+[survey](https://cran.r-project.org/package=survey) design, the
+procedure of Mplus `TYPE = COMPLEX`.
+
+Continuous outcomes use MLM (Satorra-Bentler) or MLR (Yuan-Bentler),
+including `missing = "ml"`. A model with `group=` uses replicate weights
+for MLM, so a between-group contrast keeps the covariance from primary
+sampling units that contain both groups. Ordered indicators use WLSMV,
+with replicate-weight standard errors.
+[`predict()`](https://rdrr.io/r/stats/predict.html) returns factor
+scores for continuous outcomes. A `svyrep.design` is accepted.
+
+Completed data sets from a multiple imputation are fitted one by one and
+pooled with Rubin’s rules. The design degrees of freedom are the
+complete-data degrees of freedom.
+
+The method for a single design follows Oberski (2014,
+<doi:10.18637/jss.v057.i01>). No code is taken from lavaan.survey.
+
+# Package index
+
+## All functions
+
+- [`pooled_estimates()`](https://siyangni.github.io/svysem/reference/pooled_estimates.md)
+  : Pooled parameter estimates
+- [`pooled_wald()`](https://siyangni.github.io/svysem/reference/pooled_wald.md)
+  : Wald test of pooled constraints
+- [`predict(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/predict.svysem.md)
+  [`predict(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/predict.svysem.md)
+  : Factor scores and plausible values
+- [`coef(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
+  [`vcov(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
+  [`show(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
+  [`summary(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
+  [`print(`*`<svysem.summary>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
+  : Design-based SEM fit
+- [`svysem()`](https://siyangni.github.io/svysem/reference/svysem.md)
+  [`svycfa()`](https://siyangni.github.io/svysem/reference/svysem.md)
+  [`svygrowth()`](https://siyangni.github.io/svysem/reference/svysem.md)
+  : Design-based structural equation models.
+- [`svysem(`*`<svyimputationList>`*`)`](https://siyangni.github.io/svysem/reference/svysem.svyimputationList.md)
+  [`svycfa(`*`<svyimputationList>`*`)`](https://siyangni.github.io/svysem/reference/svysem.svyimputationList.md)
+  [`svygrowth(`*`<svyimputationList>`*`)`](https://siyangni.github.io/svysem/reference/svysem.svyimputationList.md)
+  : Fit each completed design
+- [`show(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  [`coef(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  [`vcov(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  [`nobs(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  [`summary(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  [`print(`*`<svysem_mi.summary>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  [`fitMeasures(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/svysem_mi-class.md)
+  : Multiply imputed design-based SEM
+
+# Articles
+
+### All vignettes
+
+- [Design-based SEM with
+  svysem](https://siyangni.github.io/svysem/articles/design.md):
+- [Multiply imputed survey
+  data](https://siyangni.github.io/svysem/articles/imputation.md):
+- [How svysem relates to Mplus, lavaan and
+  lavaan.survey](https://siyangni.github.io/svysem/articles/related.md):
