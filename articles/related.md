@@ -17,7 +17,7 @@ model <- "f =~ y1 + y2 + y3 + y4"
 fit <- svycfa(model, design)
 weighted <- lavaan::cfa(model, data = design$variables, sampling.weights = "w")
 max(abs(coef(fit) - lavaan::coef(weighted)[names(coef(fit))]))
-#> [1] 1.332268e-15
+#> [1] 2.220446e-15
 ```
 
 The coefficients above agree because both fits use the sampling weights.

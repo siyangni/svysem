@@ -62,7 +62,7 @@ head(pooled_estimates(fit), 3)
 #> f=~y4   0      0 0.1744966 2
 pooled_wald(fit, "z == 0")
 #>          F df1      df2      pvalue          riv
-#> 1 18.45062   1 8.461538 0.002311303 2.591327e-29
+#> 1 18.45062   1 8.461538 0.002311303 1.457622e-29
 fitMeasures(fit, c("chisq.scaled", "cfi.robust.mean", "cfi.robust.min", "cfi.robust.max"))
 #>    chisq.scaled cfi.robust.mean  cfi.robust.min  cfi.robust.max 
 #>       0.5671328       1.0000000       1.0000000       1.0000000

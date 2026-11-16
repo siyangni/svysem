@@ -60,7 +60,7 @@
       <h1>How svysem relates to Mplus, lavaan and lavaan.survey</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/siyangni/svysem/blob/main/vignettes/related.Rmd" class="external-link"><code>vignettes/related.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/siyangni/svysem/blob/v0.3.1/vignettes/related.Rmd" class="external-link"><code>vignettes/related.Rmd</code></a></small>
       <div class="d-none name"><code>related.Rmd</code></div>
     </div>
 
@@ -81,7 +81,7 @@ lavaan’s diagonally weighted least squares matrix.</p>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/svysem.html">svycfa</a></span><span class="op">(</span><span class="va">model</span>, <span class="va">design</span><span class="op">)</span></span>
 <span><span class="va">weighted</span> <span class="op">&lt;-</span> <span class="fu">lavaan</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lavaan/man/cfa.html" class="external-link">cfa</a></span><span class="op">(</span><span class="va">model</span>, data <span class="op">=</span> <span class="va">design</span><span class="op">$</span><span class="va">variables</span>, sampling.weights <span class="op">=</span> <span class="st">"w"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span> <span class="op">-</span> <span class="fu">lavaan</span><span class="fu">::</span><span class="fu">coef</span><span class="op">(</span><span class="va">weighted</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1.332268e-15</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 2.220446e-15</span></span></code></pre></div>
 <p>The coefficients above agree because both fits use the sampling
 weights. The standard errors do not. lavaan treats the rows as
 independent. svysem also uses the strata and the primary sampling
