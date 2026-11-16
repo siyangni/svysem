@@ -7,9 +7,15 @@ svygrowth <- function(...) suppressWarnings(svysem::svygrowth(...))
 cfa_model <- "f =~ y1 + y2 + y3 + y4"
 
 weighted_lavaan <- function(data, model, ...) {
-  suppressWarnings(lavaan::cfa(
-    model, data = data, estimator = "WLSMV", sampling.weights = "w", ...
-  ))
+  args <- list(
+    model = model, data = data, estimator = "WLSMV",
+    sampling.weights = "w", ...
+  )
+  # lavaan 0.7 requires ordered= even when every indicator is continuous.
+  if (is.null(args$ordered)) {
+    args$ordered <- FALSE
+  }
+  suppressWarnings(do.call(lavaan::cfa, args))
 }
 
 clustered <- function(seed) {

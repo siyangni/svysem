@@ -2,7 +2,7 @@
 
 * Multigroup MLM (`group=`) uses replicate-weight standard errors. A per-group `NACOV` would drop the covariance between groups when primary sampling units overlap the groups. The chi-square for that fit is the maximum-likelihood statistic.
 * `predict()` returns posterior-mean factor scores for continuous outcomes, and plausible values when `draws` is positive. `lavaan::lavPredict()` on a weighted fit in lavaan 0.6-21 does not return these scores.
-* WLSMV for ordered indicators. Point estimates use lavaan's weighted diagonally weighted least squares matrix. Standard errors use replicate weights (`survey::as.svrepdesign()`, type `"auto"` unless `replicate.type` is set).
+* WLSMV for ordered indicators. Point estimates use lavaan's weighted diagonally weighted least squares matrix. Standard errors use replicate weights (`survey::as.svrepdesign()`, type `"auto"` unless `replicate.type` is set). Continuous WLSMV passes `ordered = FALSE`, which lavaan 0.7 requires when no indicator is ordered.
 * A `svyrep.design` is accepted for MLM, WLSMV, and MLR. `variance_method` is then `"replication"`.
 * MLR for continuous outcomes, including `missing = "ml"`. The variance is a design-based sandwich from casewise scores, and the Yuan-Bentler statistic uses that sandwich. Listwise deletion keeps incomplete rows in the design with weight 0. Defined-parameter standard errors use the delta method.
 * Multiple imputation accepts MLM, WLSMV, and MLR. `parallel` loops imputations; replicate weights inside one imputation stay sequential.

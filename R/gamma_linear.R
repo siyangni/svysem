@@ -182,6 +182,24 @@ svysem_lavaan_args <- function(model, data, weight, dots, estimator = "MLM",
     args <- args[!names(args) %in% names(extra)]
     args <- c(args, extra)
   }
+  svysem_allow_continuous_wlsmv(args, model, data)
+}
+
+# lavaan 0.7 stops on WLSMV when ordered= was omitted, including for
+# continuous data. ordered = FALSE keeps that continuous path. Ordered
+# factors are left unset so lavaan still treats them as categorical.
+svysem_allow_continuous_wlsmv <- function(args, model, data) {
+  if (!identical(args$estimator, "WLSMV") || !is.null(args$ordered) ||
+        !is.data.frame(data)) {
+    return(args)
+  }
+  observed <- intersect(svysem_observed_names(model), names(data))
+  categorical <- length(observed) > 0L && any(vapply(
+    data[observed], inherits, logical(1), what = "ordered"
+  ))
+  if (!categorical) {
+    args$ordered <- FALSE
+  }
   args
 }
 
