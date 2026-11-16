@@ -27,7 +27,8 @@ Description: Design-based estimation of structural equation models uses a model
     weight matrix, and standard errors use replicate weights. predict() returns
     factor scores for continuous outcomes. A replicate-weight design is accepted.
 License: GPL (>= 2)
-URL: https://github.com/siyangni/svysem
+URL: https://github.com/siyangni/svysem,
+    https://siyangni.github.io/svysem
 BugReports: https://github.com/siyangni/svysem/issues
 Depends: R (>= 4.2.0)
 Imports:
