@@ -43,6 +43,7 @@
 <ul><li>
 <code><a href="../reference/parameterEstimates.html">parameterEstimates()</a></code> and <code><a href="../reference/standardizedSolution.html">standardizedSolution()</a></code> on a svysem fit include standard errors and confidence intervals. lavaan’s own functions omit those columns unless <code>se = TRUE</code>, because the object’s first class is <code>svysem</code> rather than <code>lavaan</code>.</li>
 <li>MLR on lavaan 0.7 uses <code>lavScores()</code> as returned. That version already multiplies casewise scores by the sampling weight. Multiplying again made the sandwich too large.</li>
+<li>The comparison vignette cites Krewski and Rao (1981) for the stratified jackknife and balanced repeated replication.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="svysem-030">svysem 0.3.0<a class="anchor" aria-label="anchor" href="#svysem-030"></a></h2>

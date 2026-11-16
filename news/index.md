@@ -11,6 +11,8 @@
 - MLR on lavaan 0.7 uses `lavScores()` as returned. That version already
   multiplies casewise scores by the sampling weight. Multiplying again
   made the sandwich too large.
+- The comparison vignette cites Krewski and Rao (1981) for the
+  stratified jackknife and balanced repeated replication.
 
 ## svysem 0.3.0
 

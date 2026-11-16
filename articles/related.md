@@ -48,7 +48,13 @@ uses a Yuan-Bentler adjustment (Yuan and Bentler 2000,
 <doi:10.1111/0081-1750.00078>), including when `missing = "ml"`. The MLR
 variance is a sandwich: lavaan’s observed information, and the design
 variance of the casewise scores. WLSMV standard errors are the
-replicate-weight variance of lavaan’s own sample statistics.
+replicate-weight variance of lavaan’s own sample statistics. With
+strata, those replicates are a stratified jackknife: one primary
+sampling unit is removed from its stratum at a time. For a nonlinear
+statistic from a stratified multistage sample in which the primary
+sampling units are drawn with replacement, that jackknife and balanced
+repeated replication are consistent variance estimators (Krewski and Rao
+1981, <doi:10.1214/aos/1176345580>).
 
 For a multiply imputed design, each imputation is fitted and the
 parameters are pooled with Rubin’s rules. The within-imputation
