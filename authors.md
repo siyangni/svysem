@@ -7,7 +7,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/siyangni/svysem/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/siyangni/svysem/blob/v0.3.0/inst/CITATION)
 
 Ni S (2026). *svysem: Design-Based Structural Equation Models for
 Complex Surveys*. R package version 0.3.0,
