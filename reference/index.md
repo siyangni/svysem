@@ -2,6 +2,8 @@
 
 ## All functions
 
+- [`parameterEstimates()`](https://siyangni.github.io/svysem/reference/parameterEstimates.md)
+  : Parameter estimates
 - [`pooled_estimates()`](https://siyangni.github.io/svysem/reference/pooled_estimates.md)
   : Pooled parameter estimates
 - [`pooled_wald()`](https://siyangni.github.io/svysem/reference/pooled_wald.md)
@@ -9,6 +11,8 @@
 - [`predict(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/predict.svysem.md)
   [`predict(`*`<svysem_mi>`*`)`](https://siyangni.github.io/svysem/reference/predict.svysem.md)
   : Factor scores and plausible values
+- [`standardizedSolution()`](https://siyangni.github.io/svysem/reference/standardizedSolution.md)
+  : Standardized solution
 - [`coef(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
   [`vcov(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)
   [`show(`*`<svysem>`*`)`](https://siyangni.github.io/svysem/reference/svysem-class.md)

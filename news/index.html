@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">svysem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,9 +35,15 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/siyangni/svysem/blob/v0.3.0/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/siyangni/svysem/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.1" id="svysem-031">svysem 0.3.1<a class="anchor" aria-label="anchor" href="#svysem-031"></a></h2>
+<ul><li>
+<code><a href="../reference/parameterEstimates.html">parameterEstimates()</a></code> and <code><a href="../reference/standardizedSolution.html">standardizedSolution()</a></code> on a svysem fit include standard errors and confidence intervals. lavaan’s own functions omit those columns unless <code>se = TRUE</code>, because the object’s first class is <code>svysem</code> rather than <code>lavaan</code>.</li>
+<li>MLR on lavaan 0.7 uses <code>lavScores()</code> as returned. That version already multiplies casewise scores by the sampling weight. Multiplying again made the sandwich too large.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="svysem-030">svysem 0.3.0<a class="anchor" aria-label="anchor" href="#svysem-030"></a></h2>
 <ul><li>Multigroup MLM (<code>group=</code>) uses replicate-weight standard errors. A per-group <code>NACOV</code> would drop the covariance between groups when primary sampling units overlap the groups. The chi-square for that fit is the maximum-likelihood statistic.</li>

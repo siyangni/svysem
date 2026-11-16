@@ -21,7 +21,7 @@ Arguments in ... are passed on to that fitter."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">svysem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +49,7 @@ Arguments in ... are passed on to that fitter."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Design-based structural equation models.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/siyangni/svysem/blob/v0.3.0/R/generics.R" class="external-link"><code>R/generics.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/siyangni/svysem/blob/main/R/generics.R" class="external-link"><code>R/generics.R</code></a></small>
       <div class="d-none name"><code>svysem.Rd</code></div>
     </div>
 
@@ -287,12 +287,12 @@ and <code>svysem_call</code>.</p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The returned object extends lavaan, so <code><a href="https://rdrr.io/r/stats/coef.html" class="external-link">coef()</a></code>, <code><a href="https://rdrr.io/r/stats/vcov.html" class="external-link">vcov()</a></code>,
 <code><a href="https://rdrr.io/pkg/lavaan/man/lavTestWald.html" class="external-link">lavaan::lavTestWald()</a></code> and <code><a href="https://rdrr.io/pkg/lavaan/man/fitMeasures.html" class="external-link">lavaan::fitMeasures()</a></code> report design-based
-results. <code><a href="https://rdrr.io/pkg/lavaan/man/parameterEstimates.html" class="external-link">lavaan::parameterEstimates()</a></code> and
-<code><a href="https://rdrr.io/pkg/lavaan/man/standardizedSolution.html" class="external-link">lavaan::standardizedSolution()</a></code> omit standard errors unless <code>se = TRUE</code>,
-because the object's class is <code>svysem</code> rather than <code>lavaan</code>. <code>se = TRUE</code>
-returns the design-based standard errors, matching <code>sqrt(diag(vcov()))</code>.
-<code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and the printed display add the design degrees of freedom and
-the estimator.</p>
+results. <a href="parameterEstimates.html">parameterEstimates()</a> and
+<a href="standardizedSolution.html">standardizedSolution()</a> include the
+design-based standard errors and confidence intervals. lavaan's own
+functions omit those columns unless <code>se = TRUE</code>, because the object's
+class is <code>svysem</code> rather than <code>lavaan</code>. <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> and the printed
+display add the design degrees of freedom and the estimator.</p>
 <p><code>"MLM"</code> is maximum likelihood with a Satorra-Bentler adjustment for
 complete continuous data. <code>missing = "ml"</code> is an error and names MLR as the
 estimator that handles it. Rows that are incomplete on the model variables

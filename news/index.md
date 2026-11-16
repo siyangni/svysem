@@ -1,5 +1,17 @@
 # Changelog
 
+## svysem 0.3.1
+
+- [`parameterEstimates()`](https://siyangni.github.io/svysem/reference/parameterEstimates.md)
+  and
+  [`standardizedSolution()`](https://siyangni.github.io/svysem/reference/standardizedSolution.md)
+  on a svysem fit include standard errors and confidence intervals.
+  lavaan’s own functions omit those columns unless `se = TRUE`, because
+  the object’s first class is `svysem` rather than `lavaan`.
+- MLR on lavaan 0.7 uses `lavScores()` as returned. That version already
+  multiplies casewise scores by the sampling weight. Multiplying again
+  made the sandwich too large.
+
 ## svysem 0.3.0
 
 - Multigroup MLM (`group=`) uses replicate-weight standard errors. A

@@ -248,12 +248,12 @@ The returned object extends lavaan, so
 and
 [`lavaan::fitMeasures()`](https://rdrr.io/pkg/lavaan/man/fitMeasures.html)
 report design-based results.
-[`lavaan::parameterEstimates()`](https://rdrr.io/pkg/lavaan/man/parameterEstimates.html)
+[parameterEstimates()](https://siyangni.github.io/svysem/reference/parameterEstimates.md)
 and
-[`lavaan::standardizedSolution()`](https://rdrr.io/pkg/lavaan/man/standardizedSolution.html)
-omit standard errors unless `se = TRUE`, because the object's class is
-`svysem` rather than `lavaan`. `se = TRUE` returns the design-based
-standard errors, matching `sqrt(diag(vcov()))`.
+[standardizedSolution()](https://siyangni.github.io/svysem/reference/standardizedSolution.md)
+include the design-based standard errors and confidence intervals.
+lavaan's own functions omit those columns unless `se = TRUE`, because
+the object's class is `svysem` rather than `lavaan`.
 [`summary()`](https://rdrr.io/r/base/summary.html) and the printed
 display add the design degrees of freedom and the estimator.
 

@@ -6,8 +6,8 @@ whose standard errors use the survey design. Where the estimator has a
 scaled test, that test uses the design too.
 [`coef()`](https://rdrr.io/r/stats/coef.html),
 [`vcov()`](https://rdrr.io/r/stats/vcov.html),
-[`lavaan::parameterEstimates()`](https://rdrr.io/pkg/lavaan/man/parameterEstimates.html),
-[`lavaan::standardizedSolution()`](https://rdrr.io/pkg/lavaan/man/standardizedSolution.html),
+[parameterEstimates()](https://siyangni.github.io/svysem/reference/parameterEstimates.md),
+[standardizedSolution()](https://siyangni.github.io/svysem/reference/standardizedSolution.md),
 [`lavaan::lavTestWald()`](https://rdrr.io/pkg/lavaan/man/lavTestWald.html)
 and
 [`lavaan::fitMeasures()`](https://rdrr.io/pkg/lavaan/man/fitMeasures.html)
