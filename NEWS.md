@@ -1,3 +1,9 @@
+# svysem (unreleased)
+
+* MLR standard errors cover equality constraints: a shared label, `==`, and a nonlinear `==`, including `effect.coding`. The sandwich uses lavaan's constraint basis. `std.lv` is unchanged.
+* Multigroup MLM no longer reports `chisq.scaled`. That value was lavaan's weight-only Yuan-Bentler statistic, not a design-based scaled chi-square. `chisq` remains the maximum-likelihood statistic.
+* The design error names `svyrep.design` as an accepted class. The MLM `missing = "ml"` error says to use MLR.
+
 # svysem 0.3.1
 
 * `parameterEstimates()` and `standardizedSolution()` on a svysem fit include standard errors and confidence intervals. lavaan's own functions omit those columns unless `se = TRUE`, because the object's first class is `svysem` rather than `lavaan`.

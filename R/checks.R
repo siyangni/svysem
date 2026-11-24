@@ -54,7 +54,7 @@ svysem_check_missing <- function(missing_value, estimator = "MLM") {
       svysem_stop(
         paste0(
           "missing = \"", missing_value, "\" is not available for MLM. ",
-          "MLM is complete data only. The MLR estimator will handle missing = \"ml\"."
+          "MLM is complete data only. Use estimator = \"MLR\" with missing = \"ml\"."
         ),
         "svysem_error_missing"
       )
@@ -108,7 +108,7 @@ svysem_check_missing <- function(missing_value, estimator = "MLM") {
 svysem_stop_design <- function(design) {
   svysem_stop(
     paste0(
-      "design must be a survey.design or survey.design2 object. ",
+      "design must be a survey.design, survey.design2, or svyrep.design object. ",
       "The class supplied was: ", paste(class(design), collapse = ", "), "."
     ),
     "svysem_error_design"

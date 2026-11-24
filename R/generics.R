@@ -45,13 +45,19 @@
 #' `group=` on MLM refits the weighted model on replicate weights, because
 #' lavaan keeps one `NACOV` per group and that drops the covariance between
 #' groups. The multigroup chi-square is the maximum-likelihood statistic, not
-#' a Satorra-Bentler statistic. Clustering is taken from the design; do not
+#' a Satorra-Bentler statistic. `fitMeasures()` does not report a scaled
+#' chi-square for that fit: the scaled statistic lavaan adds from the sampling
+#' weights ignores primary sampling units, so it is dropped. Clustering is
+#' taken from the design; do not
 #' pass `cluster=`, which would double-count primary sampling units.
 #' `survey.lonely.psu` is read by [survey::svymean()] and is never set here.
 #'
 #' `"MLR"` is robust maximum likelihood with a Yuan-Bentler adjustment. The
 #' variance is a sandwich: lavaan's observed information, and a meat from the
-#' design variance of the casewise scores ([survey::svytotal()]).
+#' design variance of the casewise scores ([survey::svytotal()]). Equality
+#' constraints, including a shared label, `==`, and a nonlinear `==`, are
+#' included. The sandwich is solved on lavaan's constraint basis and expanded
+#' back to the free parameters. `std.lv` and `effect.coding` are accepted.
 #' `missing = "ml"` scores the observed indicators; it does not fall back to
 #' complete cases. On a `survey.design` the variance method is linearization.
 #' On a `svyrep.design` it is replication, because [survey::svytotal()] uses

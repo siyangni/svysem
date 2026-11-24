@@ -320,6 +320,33 @@ svysem_one_coef_replicate <- function(fitter, model, prepared, dots, weights, ta
   list(ok = TRUE, coef = estimate)
 }
 
+# Sampling weights make lavaan append a Yuan-Bentler statistic even when
+# test = "standard". That statistic uses the weights only, not the primary
+# sampling units. Multigroup MLM keeps the maximum-likelihood chi-square.
+svysem_ml_test_only <- function(test) {
+  if (!is.list(test) || !length(test)) {
+    return(test)
+  }
+  keep <- vapply(test, function(element) {
+    is.list(element) && identical(element$test, "standard")
+  }, logical(1))
+  if (!any(keep)) {
+    return(test)
+  }
+  test[keep]
+}
+
+svysem_strip_scaled_test <- function(fit) {
+  fit@test <- svysem_ml_test_only(fit@test)
+  if (is.list(fit@baseline$test)) {
+    fit@baseline$test <- svysem_ml_test_only(fit@baseline$test)
+  }
+  if (is.character(fit@Options$test)) {
+    fit@Options$test <- "standard"
+  }
+  fit
+}
+
 # lavaan stores one NACOV per group, so the covariance between groups is
 # dropped. Primary sampling units that contain both groups make a
 # between-group contrast miss that term. The coefficients are refit on each
@@ -377,7 +404,11 @@ svysem_replicate_coefficients <- function(fitter, model, prepared, dots,
     }
     statistics[replicate, ] <- result$coef[names(target)]
   }
-  list(fit = full, statistics = statistics, coef = target)
+  list(
+    fit = svysem_strip_scaled_test(full),
+    statistics = statistics,
+    coef = target
+  )
 }
 
 svysem_coef_variance <- function(collected, rep_design) {

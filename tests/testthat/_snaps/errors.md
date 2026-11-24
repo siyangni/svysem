@@ -12,7 +12,7 @@
       svysem("y ~ x1", design, missing = "ml")
     Condition
       Error:
-      ! missing = "ml" is not available for MLM. MLM is complete data only. The MLR estimator will handle missing = "ml".
+      ! missing = "ml" is not available for MLM. MLM is complete data only. Use estimator = "MLR" with missing = "ml".
 
 # an object that is not a survey design is refused
 
@@ -20,7 +20,7 @@
       svysem("y ~ x1", data.frame(y = 1, x1 = 1))
     Condition
       Error:
-      ! design must be a survey.design or survey.design2 object. The class supplied was: data.frame.
+      ! design must be a survey.design, survey.design2, or svyrep.design object. The class supplied was: data.frame.
 
 # a model variable missing from the design is refused
 

@@ -41,6 +41,47 @@ contrast_se <- function(fit) {
   )
 }
 
+test_that("multigroup MLM chi-square is the maximum-likelihood statistic", {
+  set.seed(4)
+  n_psu <- 6L
+  n_per <- 8L
+  n_strata <- 2L
+  psu <- rep(rep(seq_len(n_psu), each = n_per), times = n_strata)
+  strat <- rep(seq_len(n_strata), each = n_psu * n_per)
+  key <- interaction(strat, psu, drop = TRUE)
+  cluster <- stats::rnorm(nlevels(key))[key]
+  g <- rep(rep(c(1L, 2L), each = n_per / 2L), times = n_strata * n_psu)
+  factor_score <- stats::rnorm(length(g)) + 0.4 * cluster
+  frame <- data.frame(
+    y1 = 0.8 * factor_score + stats::rnorm(length(g), 0, 0.5),
+    y2 = 0.7 * factor_score + stats::rnorm(length(g), 0, 0.5),
+    y3 = 0.6 * factor_score + stats::rnorm(length(g), 0, 0.5),
+    y4 = 0.5 * factor_score + 0.2 * (g == 2L) + stats::rnorm(length(g), 0, 0.5),
+    g = factor(g),
+    w = stats::runif(length(g), 0.5, 2),
+    psu = psu,
+    strat = strat
+  )
+  design <- survey::svydesign(
+    ids = ~psu, strata = ~strat, weights = ~w, data = frame, nest = TRUE
+  )
+  model <- "f =~ y1 + y2 + y3 + y4"
+  fit <- svycfa(model, design, group = "g")
+  oracle <- lavaan::cfa(
+    model, data = frame, group = "g", sampling.weights = "w",
+    estimator = "ML", test = "standard", se = "none"
+  )
+  expect_equal(
+    as.numeric(fitMeasures(fit, "chisq")),
+    as.numeric(lavaan::fitMeasures(oracle, "chisq")),
+    tolerance = 1e-8
+  )
+  expect_false("chisq.scaled" %in% names(fitMeasures(fit)))
+  expect_false(any(vapply(fit@test, function(element) {
+    identical(element$test, "yuan.bentler.mplus")
+  }, logical(1))))
+})
+
 test_that("multigroup MLM returns replicate-weight standard errors", {
   design <- spanning_design(5L, 4L, seed = 3L)
   fit <- svysem(

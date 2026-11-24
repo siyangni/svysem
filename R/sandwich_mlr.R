@@ -23,7 +23,10 @@ svysem_information <- function(fit) {
   info <- as.matrix(info)
   # stats::coef is the S3 generic in this namespace and has no lavaan method.
   parameter_names <- names(lavaan::coef(fit))
+  # Repeated names are equality constraints (a shared label). Indexing by
+  # those names keeps the first column twice and makes the information singular.
   if (!is.null(colnames(info)) && length(parameter_names) &&
+        !anyDuplicated(parameter_names) && !anyDuplicated(colnames(info)) &&
         all(parameter_names %in% colnames(info))) {
     info <- info[parameter_names, parameter_names, drop = FALSE]
   }
@@ -157,15 +160,23 @@ svysem_check_score_balance <- function(weighted) {
 # the casewise log-likelihood is finite. That derivative is already multiplied
 # by lavaan's sampling weight.
 svysem_lavscores_weighted <- function() {
-  packageVersion("lavaan") >= "0.7"
+  utils::packageVersion("lavaan") >= "0.7"
 }
 
 svysem_casewise_scores <- function(fit, numerical) {
   if (isTRUE(numerical)) {
     return(list(scores = svysem_numerical_scores(fit), weighted = TRUE))
   }
+  # remove.duplicated = FALSE keeps one column per coef() entry. lavaan 0.7
+  # otherwise drops the repeated equality label and the meat no longer
+  # matches the observed information. The dotted argument is the 0.6 name;
+  # 0.7 accepts it as an alias of remove_duplicated.
   raw <- tryCatch(
-    lavaan::lavScores(fit, remove.empty.cases = FALSE),
+    lavaan::lavScores(
+      fit,
+      remove.duplicated = FALSE,
+      remove.empty.cases = FALSE
+    ),
     error = function(e) e
   )
   usable <- !inherits(raw, "error") && is.matrix(raw) &&
@@ -196,7 +207,9 @@ svysem_adjusted_scores <- function(fit, design, numerical) {
       "svysem_error_data"
     )
   }
-  if (!is.null(colnames(raw)) && all(parameter_names %in% colnames(raw))) {
+  if (!is.null(colnames(raw)) && !anyDuplicated(parameter_names) &&
+        !anyDuplicated(colnames(raw)) &&
+        all(parameter_names %in% colnames(raw))) {
     raw <- raw[, parameter_names, drop = FALSE]
   }
   colnames(raw) <- parameter_names
@@ -340,9 +353,61 @@ svysem_inject_covariance <- function(fit, covariance) {
   fit
 }
 
-svysem_inject_sandwich <- function(fit, pieces) {
-  solved <- tryCatch(solve(pieces$H), error = function(e) e)
-  if (inherits(solved, "error")) {
+# lavaan stores equality constraints in two places. Linear constraints,
+# including a shared label, have a basis in eq.constraints.K. Nonlinear
+# constraints have only con.jac; its null space is the same kind of basis.
+# The sandwich is solved on that reduced space and expanded back to coef().
+svysem_null_basis <- function(jacobian, n_parameters) {
+  if (!is.matrix(jacobian)) {
+    return(NULL)
+  }
+  if (ncol(jacobian) != n_parameters && nrow(jacobian) == n_parameters) {
+    jacobian <- t(jacobian)
+  }
+  if (ncol(jacobian) != n_parameters || nrow(jacobian) < 1L ||
+        any(!is.finite(jacobian))) {
+    return(NULL)
+  }
+  decomposed <- svd(jacobian, nv = n_parameters)
+  if (!length(decomposed$d) || !is.finite(decomposed$d[[1L]]) ||
+        decomposed$d[[1L]] < 1e-8) {
+    return(NULL)
+  }
+  rank <- sum(decomposed$d > 1e-8 * decomposed$d[[1L]])
+  if (rank < 1L || rank >= n_parameters) {
+    return(NULL)
+  }
+  decomposed$v[, seq.int(rank + 1L, n_parameters), drop = FALSE]
+}
+
+svysem_constraint_basis <- function(fit, n_parameters) {
+  stored <- fit@Model@eq.constraints.K
+  if (is.matrix(stored) && nrow(stored) == n_parameters &&
+        ncol(stored) > 0L && ncol(stored) < n_parameters &&
+        all(is.finite(stored))) {
+    return(stored)
+  }
+  svysem_null_basis(fit@Model@con.jac, n_parameters)
+}
+
+svysem_project_pieces <- function(fit, pieces) {
+  basis <- svysem_constraint_basis(fit, ncol(pieces$H))
+  if (is.null(basis)) {
+    return(list(
+      H = pieces$H, meat = pieces$meat, nobs = pieces$nobs, expand = NULL
+    ))
+  }
+  list(
+    H = t(basis) %*% pieces$H %*% basis,
+    meat = t(basis) %*% pieces$meat %*% basis,
+    nobs = pieces$nobs,
+    expand = basis
+  )
+}
+
+svysem_solve_bread <- function(information) {
+  solved <- tryCatch(solve(information), error = function(e) e)
+  if (inherits(solved, "error") || any(!is.finite(solved))) {
     svysem_stop(
       paste0(
         "The observed information matrix is singular, so MLR standard errors ",
@@ -351,7 +416,16 @@ svysem_inject_sandwich <- function(fit, pieces) {
       "svysem_error_data"
     )
   }
-  covariance <- solved %*% pieces$meat %*% solved
+  solved
+}
+
+svysem_inject_sandwich <- function(fit, pieces) {
+  projected <- svysem_project_pieces(fit, pieces)
+  solved <- svysem_solve_bread(projected$H)
+  covariance <- solved %*% projected$meat %*% solved
+  if (!is.null(projected$expand)) {
+    covariance <- projected$expand %*% covariance %*% t(projected$expand)
+  }
   dimnames(covariance) <- dimnames(pieces$H)
   if (any(!is.finite(covariance))) {
     svysem_stop(
@@ -362,11 +436,13 @@ svysem_inject_sandwich <- function(fit, pieces) {
   svysem_inject_covariance(fit, covariance)
 }
 
-svysem_trace_product <- function(info, meat, nobs) {
-  # tr(solve(H) %*% (n * meat)). The product is summed as an elementwise
-  # product with the transpose so a singular solve still raises.
-  first_order <- nobs * meat
-  sum(solve(info) * t(first_order))
+svysem_trace_product <- function(fit, pieces) {
+  # tr(solve(H) %*% (n * meat)) on the constraint-reduced matrices. The
+  # product is an elementwise product with the transpose.
+  projected <- svysem_project_pieces(fit, pieces)
+  solved <- svysem_solve_bread(projected$H)
+  first_order <- projected$nobs * projected$meat
+  sum(solved * t(first_order))
 }
 
 svysem_refit_partable <- function(partable, data, weight, missing) {
@@ -467,10 +543,8 @@ svysem_inject_yuan_bentler <- function(fit, design, data, weight, numerical, pie
   missing <- fit@Options$missing
   saturated <- svysem_refit_partable(partable, data, weight, missing)
   saturated_pieces <- svysem_sandwich_pieces(saturated, design, numerical)
-  trace_h1 <- svysem_trace_product(
-    saturated_pieces$H, saturated_pieces$meat, saturated_pieces$nobs
-  )
-  trace_h0 <- svysem_trace_product(pieces$H, pieces$meat, pieces$nobs)
+  trace_h1 <- svysem_trace_product(saturated, saturated_pieces)
+  trace_h0 <- svysem_trace_product(fit, pieces)
   ndat <- ncol(saturated_pieces$H)
   npar <- lavaan::lavInspect(fit, "npar")
   fit@test <- svysem_set_yuan_bentler(
@@ -487,9 +561,7 @@ svysem_inject_yuan_bentler <- function(fit, design, data, weight, numerical, pie
     return(fit)
   }
   baseline_pieces <- svysem_sandwich_pieces(baseline_fit, design, numerical)
-  trace_baseline <- svysem_trace_product(
-    baseline_pieces$H, baseline_pieces$meat, baseline_pieces$nobs
-  )
+  trace_baseline <- svysem_trace_product(baseline_fit, baseline_pieces)
   fit@baseline$test <- svysem_set_yuan_bentler(
     fit@baseline$test,
     baseline_df,

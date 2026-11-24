@@ -251,13 +251,20 @@ of continuous variables. Single-group MLM does too, by linearization.
 \verb{group=} on MLM refits the weighted model on replicate weights, because
 lavaan keeps one \code{NACOV} per group and that drops the covariance between
 groups. The multigroup chi-square is the maximum-likelihood statistic, not
-a Satorra-Bentler statistic. Clustering is taken from the design; do not
+a Satorra-Bentler statistic. \code{fitMeasures()} does not report a scaled
+chi-square for that fit: the scaled statistic lavaan adds from the sampling
+weights ignores primary sampling units, so it is dropped. Clustering is
+taken from the design; do not
 pass \verb{cluster=}, which would double-count primary sampling units.
 \code{survey.lonely.psu} is read by \code{\link[survey:svymean]{survey::svymean()}} and is never set here.
 
 \code{"MLR"} is robust maximum likelihood with a Yuan-Bentler adjustment. The
 variance is a sandwich: lavaan's observed information, and a meat from the
 design variance of the casewise scores (\code{\link[survey:svytotal]{survey::svytotal()}}).
+Equality constraints, including a shared label, \code{==}, and a nonlinear
+\code{==}, are included. The sandwich is solved on lavaan's constraint basis
+and expanded back to the free parameters. \code{std.lv} and
+\code{effect.coding} are accepted.
 \code{missing = "ml"} scores the observed indicators; it does not fall back to
 complete cases. On a \code{survey.design} the variance method is linearization.
 On a \code{svyrep.design} it is replication, because \code{\link[survey:svytotal]{survey::svytotal()}} uses
