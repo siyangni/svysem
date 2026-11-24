@@ -49,7 +49,7 @@ Arguments in ... are passed on to that fitter."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Design-based structural equation models.</h1>
-      <small class="dont-index">Source: <a href="https://github.com/siyangni/svysem/blob/v0.3.1/R/generics.R" class="external-link"><code>R/generics.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/siyangni/svysem/blob/main/R/generics.R" class="external-link"><code>R/generics.R</code></a></small>
       <div class="d-none name"><code>svysem.Rd</code></div>
     </div>
 
@@ -318,12 +318,19 @@ of continuous variables. Single-group MLM does too, by linearization.
 <code>group=</code> on MLM refits the weighted model on replicate weights, because
 lavaan keeps one <code>NACOV</code> per group and that drops the covariance between
 groups. The multigroup chi-square is the maximum-likelihood statistic, not
-a Satorra-Bentler statistic. Clustering is taken from the design; do not
+a Satorra-Bentler statistic. <code>fitMeasures()</code> does not report a scaled
+chi-square for that fit: the scaled statistic lavaan adds from the sampling
+weights ignores primary sampling units, so it is dropped. Clustering is
+taken from the design; do not
 pass <code>cluster=</code>, which would double-count primary sampling units.
 <code>survey.lonely.psu</code> is read by <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svymean()</a></code> and is never set here.</p>
 <p><code>"MLR"</code> is robust maximum likelihood with a Yuan-Bentler adjustment. The
 variance is a sandwich: lavaan's observed information, and a meat from the
 design variance of the casewise scores (<code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svytotal()</a></code>).
+Equality constraints, including a shared label, <code>==</code>, and a nonlinear
+<code>==</code>, are included. The sandwich is solved on lavaan's constraint basis
+and expanded back to the free parameters. <code>std.lv</code> and
+<code>effect.coding</code> are accepted.
 <code>missing = "ml"</code> scores the observed indicators; it does not fall back to
 complete cases. On a <code>survey.design</code> the variance method is linearization.
 On a <code>svyrep.design</code> it is replication, because <code><a href="https://rdrr.io/pkg/survey/man/surveysummary.html" class="external-link">survey::svytotal()</a></code> uses
